@@ -1,4 +1,4 @@
-package DavisBase;
+package DavisBase.TypeSupports;
 
 import java.util.*;
 import DavisBase.Util.CommonUse;

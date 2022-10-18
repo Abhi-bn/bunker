@@ -3,7 +3,7 @@ package DavisBase.DDL;
 import java.util.*;
 
 import DavisBase.DBEngine;
-import DavisBase.SupportedTypesConst;
+import DavisBase.TypeSupports.SupportedTypesConst;
 import DavisBase.Util.CommonUse;
 
 public class CreateTable {

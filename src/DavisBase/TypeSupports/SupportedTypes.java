@@ -1,4 +1,4 @@
-package DavisBase;
+package DavisBase.TypeSupports;
 
 public class SupportedTypes {
     int type;
