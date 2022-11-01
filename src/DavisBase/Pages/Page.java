@@ -1,4 +1,4 @@
-package DavisBase.DDL;
+package DavisBase.Pages;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -11,10 +11,17 @@ import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.Log;
 
 public abstract class Page {
+    public enum PageType {
+        IndexInterior,
+        TableInterior,
+        IndexLeaf,
+        TableLeaf
+    };
+
     final static short BYTE_LEN = 8;
     final static short COL_META = 2;
     final static short HEADER_SIZE = 16;
-    final int PAGESIZE = 512 * 2;
+    final int PAGESIZE = 512;
     final boolean verbose = true;
 
     final static int[] supported_offset = {
@@ -85,6 +92,7 @@ public abstract class Page {
             store[data[i].getOrder()] = c;
             cols[i] = total_size;
         }
+
         byte[] b = new byte[total_size + cols.length * 2 + 4];
         int l = 0;
         byte[] buffer = intArrToByte(0, 2);
@@ -152,6 +160,7 @@ public abstract class Page {
         } catch (IOException e) {
             Log.DEBUG(verbose, e);
         }
+
         try {
             Log.DEBUG(verbose, new String(byte_row, "UTF-8"));
         } catch (UnsupportedEncodingException e) {

@@ -6,6 +6,8 @@ import java.io.RandomAccessFile;
 
 import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.Draw;
+import DavisBase.Pages.Page;
+import DavisBase.Pages.PageGenerator;
 import DavisBase.TypeSupports.ColumnField;
 
 public class MetaData extends Table {
@@ -87,8 +89,8 @@ public class MetaData extends Table {
         try {
             f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            TableLeafPage tlp = new TableLeafPage(rf, true);
-            tlp.createNewPage(rf);
+            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
+            pg.createNewPage(rf);
             insert(fields);
             rf.close();
         } catch (IOException e) {
@@ -96,12 +98,6 @@ public class MetaData extends Table {
         }
         return true;
     }
-
-    // @Override
-    // public void insert(ValueField[][] fields) {
-    // throw new UnsupportedOperationException("Do not use this method for MetaData
-    // Table");
-    // }
 
     public void insert(String table_name, ColumnField[] fields) {
         ValueField[][] vals = colToValues(table_name, fields);
@@ -112,8 +108,8 @@ public class MetaData extends Table {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            TableLeafPage tlp = new TableLeafPage(rf, false);
-            Draw.drawTable(AllFields, tlp.getAllData(AllFields));
+            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, false);
+            Draw.drawTable(AllFields, pg.getAllData(AllFields));
             rf.close();
         } catch (IOException e) {
         }

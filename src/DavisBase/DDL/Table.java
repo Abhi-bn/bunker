@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import DavisBase.DBEngine;
+import DavisBase.Pages.Page;
+import DavisBase.Pages.PageGenerator;
 import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.Log;
@@ -39,8 +41,8 @@ public class Table {
         try {
             f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            TableLeafPage tlp = new TableLeafPage(rf, true);
-            tlp.createNewPage(rf);
+            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
+            pg.createNewPage(rf);
             DBEngine.__metadata.insert(name, generateMeta(columns));
             rf.close();
         } catch (IOException e) {
@@ -56,9 +58,9 @@ public class Table {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            TableLeafPage tlp = new TableLeafPage(rf, false);
+            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, false);
             for (int i = 0; i < fields.length; i++) {
-                tlp.insertData(fields[i]);
+                pg.insertData(fields[i]);
             }
             rf.close();
         } catch (Exception e) {
@@ -70,7 +72,7 @@ public class Table {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            TableLeafPage tlp = new TableLeafPage(rf, false);
+            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, false);
             rf.close();
         } catch (IOException e) {
         }
