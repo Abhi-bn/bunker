@@ -1,7 +1,7 @@
 package DavisBase.TypeSupports;
 
 import java.util.*;
-import DavisBase.Util.CommonUse;
+import DavisBase.Util.Log;
 
 public class SupportedTypesConst {
     static boolean verbose = true;
@@ -81,7 +81,7 @@ public class SupportedTypesConst {
     }
 
     public static String getTypeStrBytes(String type) {
-        CommonUse.Print(verbose, "Type:" + TypesToInt.get(type) + " Bytes:" + TypesToBytes.get(TypesToInt.get(type)));
+        Log.DEBUG(verbose, "Type:" + TypesToInt.get(type) + " Bytes:" + TypesToBytes.get(TypesToInt.get(type)));
         return String.valueOf(TypesToBytes.get(TypesToInt.get(type)));
     }
 
@@ -100,11 +100,16 @@ public class SupportedTypesConst {
     }
 
     public static boolean isSupported(String type) {
-        CommonUse.Print(verbose, TypesToInt.containsKey(type.toUpperCase()));
         return TypesToInt.containsKey(type);
     }
 
     public static boolean isSupported(Integer type) {
         return TypesToString.containsKey(type);
+    }
+
+    public static boolean isIntTypes(int type) {
+        if (type >= 1 && type <= 4)
+            return true;
+        return false;
     }
 }

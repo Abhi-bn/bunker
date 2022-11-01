@@ -7,7 +7,7 @@ public final class SupportedFieldsConst {
     public static int UNIQUE = 1;
 
     public static String sUNIQUE = "UNIQUE";
-    public static String sNULLABLE = "IS_NULLABLE";
+    public static String sNULLABLE = "NULLABLE";
 
     public static Map<String, Integer> FieldsToInt = new HashMap<>();
     public static Map<Integer, String> FieldsToString = new HashMap<>();

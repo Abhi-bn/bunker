@@ -4,19 +4,14 @@ import java.io.File;
 import java.io.RandomAccessFile;
 
 public class CommonUse {
-    private static void newFile(String name, int size) {
+    public static RandomAccessFile createNewFile(String name, byte[] col_data) {
         File file = new File(name);
-        RandomAccessFile rFile;
         try {
-            rFile = new RandomAccessFile(file, "rw");
-            rFile.setLength(size);
+            return new RandomAccessFile(file, "rw");
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static void createNewFile(String name) {
-        newFile(name, 512);
+        return null;
     }
 
     public static String generatePath(String... name) {
@@ -26,13 +21,5 @@ public class CommonUse {
             str += "/" + name[i];
         }
         return str;
-    }
-
-    public static void Print(boolean verbose, Object msg) {
-        if (!verbose)
-            return;
-        StackTraceElement dyn = new Exception().getStackTrace()[1];
-        System.out.println(dyn.getClassName().replace(".", "/") + ":" + dyn.getLineNumber() + " (" + dyn.getMethodName()
-                + ") > " + msg);
     }
 }

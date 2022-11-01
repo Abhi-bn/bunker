@@ -2,26 +2,54 @@ package DavisBase;
 
 import java.io.File;
 
+import DavisBase.DDL.MetaData;
+import DavisBase.DDL.Table;
+
 public class DBEngine {
-    public final static String DBPath = "davisbase";
-    final File DBFile = new File(DBPath);
+    private static String DBPath;
+    private static File DBFile;
+    public static MetaData __metadata;
 
     public DBEngine() {
-        if (initialized())
-            return;
-        initializeNewDB();
     }
 
-    public void createDB(String database) {
+    public boolean createDB(String database) {
+        DBPath = database;
+        if (!initializeNewDB())
+            return false;
+        this.connect(database);
+        return true;
+    }
 
+    public boolean createTable(String table_name, String... columns) {
+        Table tb = new Table(DBPath + "/", table_name);
+        tb.create(columns);
+        return true;
+    }
+
+    public boolean connect(String database) {
+        DBPath = database;
+
+        if (!initialized())
+            return false;
+
+        __metadata = new MetaData(DBPath + "/");
+        return true;
     }
 
     public boolean initialized() {
-        // TODO: adding database validity checks also
+        DBFile = new File(DBPath);
         return DBFile.exists();
     }
 
-    public void initializeNewDB() {
-        DBFile.mkdir();
+    public boolean initializeNewDB() {
+        DBFile = new File(DBPath);
+        // TODO: adding database validity checks also
+        return DBFile.mkdir();
+    }
+
+    public void describe() {
+        Table r = new Table(DBPath + "/", "MetaData");
+        r.describe();
     }
 }
