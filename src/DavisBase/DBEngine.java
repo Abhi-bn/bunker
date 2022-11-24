@@ -4,6 +4,7 @@ import java.io.File;
 
 import DavisBase.DDL.MetaData;
 import DavisBase.DDL.Table;
+import DavisBase.Util.Settings;
 
 public class DBEngine {
     private static String DBPath;
@@ -43,13 +44,40 @@ public class DBEngine {
     }
 
     public boolean initializeNewDB() {
+
         DBFile = new File(DBPath);
-        // TODO: adding database validity checks also
-        return DBFile.mkdir();
+        if (!checkIfPathExists(DBFile)) {
+            return DBFile.mkdir();
+        }
+        return false;
+    }
+
+    public boolean checkIfPathExists(File file) {
+        return file.exists();
     }
 
     public void describe() {
         Table r = new Table(DBPath + "/", "MetaData");
         r.describe();
+    }
+
+    public boolean dropDataBase(String databaseName) {
+        DBFile = new File(databaseName);
+        if (checkIfPathExists(DBFile)) {
+            return deleteDirectory(DBFile);
+        } else {
+            System.out.println("DataBase doesnt exist");
+            return false;
+        }
+    }
+
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
     }
 }
