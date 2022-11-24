@@ -8,7 +8,9 @@ import java.io.UnsupportedEncodingException;
 import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.SupportedTypesConst;
 import DavisBase.TypeSupports.ValueField;
+import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.Log;
+import DavisBase.Util.DavisBaseExceptions.PageOverflow;
 
 public abstract class Page {
     public enum PageType {
@@ -51,6 +53,8 @@ public abstract class Page {
         offset6 = 0;
         offset0A = 0xFFFFFFFF;
         offset10 = new int[offset2];
+        all_data = new byte[0][];
+        page_data = new byte[PAGESIZE];
     }
 
     private boolean safe_to_store(byte[] data, int cols) {
@@ -132,10 +136,10 @@ public abstract class Page {
         return page_data;
     }
 
-    public boolean insertData(ValueField[] data) {
+    public boolean insertData(ValueField[] data) throws PageOverflow, IOException {
         byte[] byte_row = make_byte_row(data);
         if (!safe_to_store(byte_row, data.length)) {
-            throw new UnsupportedOperationException("Not implemented Yet");
+            throw new DavisBaseExceptions.PageOverflow();
         }
 
         offset2 += 1;
@@ -152,25 +156,18 @@ public abstract class Page {
         }
         all_data = new_all_data;
         all_data[offset2 - 1] = byte_row;
-        try {
-            _page.seek(0);
-            _page.write(write_page_back(), 0, PAGESIZE);
-        } catch (EOFException e) {
-            Log.DEBUG(verbose, e);
-        } catch (IOException e) {
-            Log.DEBUG(verbose, e);
-        }
 
-        try {
-            Log.DEBUG(verbose, new String(byte_row, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            // this should never happen because "UTF-8" is hard-coded.
-            throw new IllegalStateException(e);
-        }
+        page_writer(false);
+
         return true;
     }
 
-    private void loadHeader(byte[] data) {
+    private void loadHeader(byte[] data, boolean init) {
+        if (init) {
+            set_initial_state();
+            return;
+        }
+
         byte[] __offset0 = new byte[1];
         for (int j = 0, k = 0; j < __offset0.length; j++, k++)
             __offset0[j] = data[k];
@@ -247,9 +244,9 @@ public abstract class Page {
         return data;
     }
 
-    public Page(RandomAccessFile page, boolean create_new) {
+    public Page(RandomAccessFile page, boolean create_new) throws IOException {
         _page = page;
-        load_all_page_data(page, create_new);
+        page_reader(create_new);
     }
 
     public ValueField[] extract_from_data(byte[] row_info, ColumnField[] column) {
@@ -291,34 +288,30 @@ public abstract class Page {
         return each_row;
     }
 
-    public boolean createNewPage(RandomAccessFile page) {
-        byte[] h = makeHeader();
-        try {
-            page.seek(0);
-            page.write(h);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return true;
+    public int GetPageEndSize() {
+        // TODO: based on type of page this will change
+        return 512;
     }
 
-    private void load_all_page_data(RandomAccessFile page, boolean create_new) {
-        if (create_new) {
-            set_initial_state();
-            return;
-        }
+    // public boolean createNewPage(RandomAccessFile page) {
+    // try {
+    // long old_seek = page.getFilePointer();
+    // page.write(write_page_back());
+    // page.seek(old_seek);
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // }
+    // return true;
+    // }
 
-        try {
-            page.seek(0);
-            page_data = new byte[PAGESIZE];
-            page.read(page_data, 0, PAGESIZE);
-            loadHeader(page_data);
-        } catch (EOFException e) {
-            Log.DEBUG(verbose, e);
-        } catch (IOException e) {
-            Log.DEBUG(verbose, e);
-        }
-    }
+    // public void loadAllPageData(RandomAccessFile page, boolean create_new) throws
+    // IOException, EOFException {
+    // long old_seek = page.getFilePointer();
+    // page_data = new byte[PAGESIZE];
+    // page.read(page_data, 0, PAGESIZE);
+    // loadHeader(page_data, create_new);
+    // page.seek(old_seek);
+    // }
 
     public static int byteArrToInt(byte[] b, int bytesSize) {
         int val = 0;
@@ -332,5 +325,21 @@ public abstract class Page {
         for (int i = 0; i < bytesSize; i++)
             bytes[bytesSize - i - 1] = (byte) (integer >>> (i * BYTE_LEN));
         return bytes;
+    }
+
+    // only place you want to seek as every read and write need page pointer to
+    // reset
+    private void page_writer(boolean readOnly) throws IOException {
+        long old_seek = _page.getFilePointer();
+        _page.write(write_page_back());
+        _page.seek(old_seek);
+    }
+
+    private void page_reader(boolean readOnly) throws IOException {
+        long old_seek = _page.getFilePointer();
+        page_data = new byte[PAGESIZE];
+        _page.read(page_data, 0, PAGESIZE);
+        loadHeader(page_data, readOnly);
+        _page.seek(old_seek);
     }
 }

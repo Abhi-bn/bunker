@@ -1,10 +1,12 @@
 package DavisBase.Util;
 
+import java.util.ArrayList;
+
 import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.ValueField;
 
 public class Draw {
-    public static void drawTable(ColumnField[] column, ValueField[][] values) {
+    public static void drawTable(ColumnField[] column, ArrayList<ValueField[]> values) {
         int[] format = new int[column.length];
         int[] special = new int[column.length];
         int total_length = 0;
@@ -20,14 +22,14 @@ public class Draw {
             total_length += l;
             special[j] = total_length - 1;
         }
-        for (int i = 0; i < values.length; i++) {
+        for (int i = 0; i < values.size(); i++) {
             if (i == 0) {
                 draw_line(special, total_length, 0);
-                draw_each_field(format, values[i], false);
+                draw_each_field(format, values.get(i), false);
                 System.out.println();
                 draw_line(special, total_length, 1);
             }
-            draw_each_field(format, values[i], true);
+            draw_each_field(format, values.get(i), true);
             System.out.println();
         }
         draw_line(special, total_length, 2);

@@ -5,15 +5,19 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import DavisBase.TypeSupports.ValueField;
+import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.Draw;
 import DavisBase.Pages.Page;
+import DavisBase.Pages.PageController;
 import DavisBase.Pages.PageGenerator;
 import DavisBase.TypeSupports.ColumnField;
 
 public class MetaData extends Table {
     enum ColumnIndexes {
-        _id, TABLE, COLUMN, TYPE, BYTES, UNIQUE, NULLABLE, ORDER, ACCESS
+        _id, TABLE, COLUMN, TYPE, BYTES, UNIQUE, NULLABLE, ORDER, ACCESS, VALUE
     };
+
+    // Map<String, ValueField[]> tables_info;
 
     ColumnField[] AllFields;
     ValueField[][] fields;
@@ -29,7 +33,8 @@ public class MetaData extends Table {
                 { "UNIQUE", "TINYINT" },
                 { "NULLABLE", "TINYINT" },
                 { "ORDER", "SMALLINT" },
-                { "ACCESS", "SMALLINT" }
+                { "ACCESS", "SMALLINT" },
+                { "ROWS", "INT" }
         };
         meta_info = info;
 
@@ -71,6 +76,9 @@ public class MetaData extends Table {
             info[8] = new ValueField(
                     allFields[i].getAccess(), meta_info[ColumnIndexes.ACCESS.ordinal()],
                     ColumnIndexes.ACCESS.ordinal());
+            info[9] = new ValueField(
+                    0, meta_info[ColumnIndexes.VALUE.ordinal()],
+                    ColumnIndexes.VALUE.ordinal());
 
             fields[i] = info;
         }
@@ -90,9 +98,11 @@ public class MetaData extends Table {
             f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
-            pg.createNewPage(rf);
+            // pg.createNewPage(rf);
             insert(fields);
             rf.close();
+        } catch (DavisBaseExceptions.PageOverflow e) {
+
         } catch (IOException e) {
 
         }
@@ -107,9 +117,9 @@ public class MetaData extends Table {
     public void selectRows() {
         File f = new File(getFilePath());
         try {
-            RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, false);
-            Draw.drawTable(AllFields, pg.getAllData(AllFields));
+            RandomAccessFile rf = new RandomAccessFile(f, "r");
+            PageController pc = new PageController(rf, false);
+            Draw.drawTable(AllFields, pc.get_me_data(AllFields));
             rf.close();
         } catch (IOException e) {
         }
