@@ -80,4 +80,8 @@ public class PageController {
         }
     }
 
+    public void insert_data_index(ValueField[][] data) {
+
+    }
+
 }

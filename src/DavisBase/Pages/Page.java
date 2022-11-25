@@ -47,7 +47,7 @@ public abstract class Page {
     int col_size;
     byte[][] all_data;
 
-    private void set_initial_state() {
+    public void set_initial_state() {
         offset2 = 0;
         offset4 = PAGESIZE;
         offset6 = 0;
