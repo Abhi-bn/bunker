@@ -162,7 +162,7 @@ public abstract class Page {
         return true;
     }
 
-    private void loadHeader(byte[] data, boolean init) {
+    public void loadHeader(byte[] data, boolean init) {
         if (init) {
             set_initial_state();
             return;

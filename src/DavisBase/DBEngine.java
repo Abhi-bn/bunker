@@ -52,4 +52,16 @@ public class DBEngine {
         Table r = new Table(DBPath + "/", "MetaData");
         r.describe();
     }
+
+    public boolean insertInto(String table_name, String... columns) {
+        Table tb = new Table(DBPath + "/", table_name);
+        tb.insertInto(columns);
+        return true;
+    }
+
+    public boolean select(String table_name, String... columns) {
+        Table tb = new Table(DBPath + "/", table_name);
+        tb.select(table_name);
+        return true;
+    }
 }
