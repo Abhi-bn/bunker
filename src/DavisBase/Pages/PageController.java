@@ -53,6 +53,9 @@ public class PageController {
                 break;
             try {
                 Page pg = null;
+
+                extend = pos >= access_file.length();
+
                 if (extend) {
                     extend = false;
                     // extend the file first
@@ -61,6 +64,7 @@ public class PageController {
                     access_file.seek(old);
                     pg = PageGenerator.generatePage(Page.PageType.TableLeaf, access_file, true);
                 } else {
+                    access_file.seek(pos);
                     pg = PageGenerator.generatePage(Page.PageType.TableLeaf, access_file, false);
                 }
 
@@ -68,8 +72,6 @@ public class PageController {
                 for (int i = rows_inserted; i < data.length; i++) {
                     rows_inserted += pg.insertData(data[i]) ? 1 : 0;
                 }
-
-                access_file.seek(pos);
             } catch (DavisBaseExceptions.PageOverflow e) {
                 extend = true;
             } catch (EOFException e) {

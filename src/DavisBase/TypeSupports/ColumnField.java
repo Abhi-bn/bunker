@@ -18,6 +18,38 @@ public class ColumnField {
         return unique;
     }
 
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public void setAccess(int access) {
+        this.access = access;
+    }
+
+    public void setBytes(int bytes) {
+        this.bytes = bytes;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
     public boolean getNullable() {
         return nullable;
     }
@@ -56,7 +88,7 @@ public class ColumnField {
     public ColumnField(ColumnField fd, int order) {
         this.name = fd.getName();
         this.type = fd.getType();
-        this.bytes = fd.getType();
+        this.bytes = fd.getBytes();
         this.order = order;
         this.unique = fd.unique;
         this.nullable = fd.nullable;
