@@ -21,4 +21,15 @@ public class ValueField extends ColumnField {
     public void setValue(Object value) {
         this.value = value;
     }
+
+    public boolean compare(ValueField vf) {
+        if (this.getValue() instanceof String) {
+            if (this.getValue().equals(vf.getValue()))
+                return true;
+        } else {
+            if (this.getValue() == vf.getValue())
+                return true;
+        }
+        return false;
+    }
 }

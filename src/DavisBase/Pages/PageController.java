@@ -82,6 +82,30 @@ public class PageController {
         }
     }
 
+    public int delete_data(ValueField[] data, ValueField[] columns) {
+        int pos = 0;
+        int rows_deleted = 0;
+        while (true) {
+            try {
+                if (pos >= access_file.length())
+                    break;
+                Page pg = null;
+
+                pg = PageGenerator.generatePage(Page.PageType.TableLeaf, access_file, false);
+                pos += pg.GetPageEndSize();
+                rows_deleted += pg.removeTheseData(data, columns) ? 1 : 0;
+                access_file.seek(pos);
+            } catch (DavisBaseExceptions.PageOverflow e) {
+                System.out.println(e);
+            } catch (EOFException e) {
+                System.out.println(e);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+        }
+        return rows_deleted;
+    }
+
     public void insert_data_index(ValueField[][] data) {
         System.out.println(access_file);
         int pos = 0;

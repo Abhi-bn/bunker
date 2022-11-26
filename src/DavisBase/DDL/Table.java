@@ -67,7 +67,7 @@ public class Table {
             return false;
         }
         ValueField[][] new_data = new ValueField[1][table_info.length];
-        new_data[0][0] = new ValueField(0, table_info[0]);
+        new_data[0][0] = new ValueField(table_info.length + 1, table_info[0]);
         for (int i = 1; i < table_info.length; i++) {
             ValueField fd = new ValueField(cols[i - 1], table_info[i]);
             new_data[0][i] = fd;
@@ -104,5 +104,30 @@ public class Table {
     public void describe() {
         MetaData tb = new MetaData(path);
         tb.selectRows();
+    }
+
+    public int deleteTableValues(String... cols) {
+        ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
+        ValueField[] to_delete = new ValueField[cols.length / 2];
+        for (int i = 0; i < cols.length; i += 2) {
+            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, cols[i].toUpperCase());
+            field.setValue(cols[i + 1]);
+            to_delete[i] = field;
+        }
+
+        return deleteTableValues(to_delete, table_info);
+    }
+
+    public int deleteTableValues(ValueField[] fields, ValueField[] columns) {
+        File f = new File(getFilePath());
+        int rows_deleted = 0;
+        try {
+            RandomAccessFile rf = new RandomAccessFile(f, "rw");
+            PageController pc = new PageController(rf, false);
+            rows_deleted = pc.delete_data(fields, columns);
+            rf.close();
+        } catch (IOException e) {
+        }
+        return rows_deleted;
     }
 }
