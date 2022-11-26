@@ -83,7 +83,41 @@ public class PageController {
     }
 
     public void insert_data_index(ValueField[][] data) {
+        System.out.println(access_file);
+        int pos = 0;
+        int rows_inserted = 0;
+        boolean extend = false;
+        while (true) {
+            if (rows_inserted == data.length)
+                break;
+            try {
+                Page pg = null;
+                System.out.println(access_file.length());
+                extend = pos >= access_file.length();
 
+                if (extend) {
+                    extend = false;
+                    // extend the file first
+                    long old = access_file.length();
+                    access_file.setLength(access_file.length() + 512);
+                    access_file.seek(old);
+                    pg = PageGenerator.generatePage(Page.PageType.IndexLeaf, access_file, true);
+                } else {
+                    access_file.seek(pos);
+                    pg = PageGenerator.generatePage(Page.PageType.IndexLeaf, access_file, false);
+                }
+
+                pos += pg.GetPageEndSize();
+                for (int i = rows_inserted; i < data.length; i++) {
+                    rows_inserted += pg.insertDataIndex(data[i]) ? 1 : 0;
+                }
+            } catch (DavisBaseExceptions.PageOverflow e) {
+                extend = true;
+            } catch (EOFException e) {
+                extend = true;
+            } catch (IOException e) {
+                extend = true;
+            }
+        }
     }
-
 }
