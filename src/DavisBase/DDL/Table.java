@@ -130,4 +130,68 @@ public class Table {
         }
         return rows_deleted;
     }
+
+    public String getIndexFilePath(String indexName) {
+        return path + indexName + ".ndx";
+    }
+
+    public void insertIntoIndex(String tableName, String columnName, Object value) {
+        ValueField[] cols = DBEngine.__metadata.tables_info.get(tableName);
+        int colDataType = 0;
+        boolean found = false;
+        for (ValueField valueField : cols) {
+            if (valueField.getName().equals(columnName)) {
+                colDataType = valueField.getType();
+                found = true;
+                break;
+            }
+        }
+
+        ValueField[][] valueField = new ValueField[1][4];
+        if (found) {
+            valueField[0][0] = new ValueField(123, cols[0]);
+            valueField[0][0].setOrder(0);
+            valueField[0][0].setName("numberOfIndexes");
+            valueField[0][0].setType(3);
+            valueField[0][0].setValue(0);
+
+            valueField[0][1] = new ValueField(123, cols[0]);
+            valueField[0][1].setOrder(1);
+            valueField[0][1].setName("indexType");
+            valueField[0][1].setType(3);
+            valueField[0][1].setValue(colDataType);
+
+            valueField[0][2] = new ValueField(123, cols[0]);
+            valueField[0][2].setOrder(2);
+            valueField[0][2].setName("indexValue");
+            valueField[0][2].setType(colDataType);
+            valueField[0][2].setValue(value);
+
+            valueField[0][3] = new ValueField(123, cols[0]);
+            valueField[0][3].setOrder(3);
+            valueField[0][3].setName("indexRowId");
+            valueField[0][3].setType(3);
+            valueField[0][3].setValue(0);
+        }
+
+        else {
+            System.out.println("Index column not found");
+            return;
+        }
+
+        insertIndex(valueField);
+    }
+
+    public void insertIndex(ValueField[][] fields) {
+        File f = new File(getIndexFilePath("Way.row_id"));
+        try {
+            RandomAccessFile rf = new RandomAccessFile(f, "rw");
+            PageController pc = new PageController(rf, false);
+            pc.insert_data_index(fields);
+            rf.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

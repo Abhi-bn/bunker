@@ -39,6 +39,4 @@ public class Index {
         return path + "/" + name + "." + column + ".ndx";
     }
 
-    public 
-
 }

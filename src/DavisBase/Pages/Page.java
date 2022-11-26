@@ -383,4 +383,66 @@ public abstract class Page {
         loadHeader(page_data, readOnly);
         _page.seek(old_seek);
     }
+
+    private byte[] make_byte_row_index(ValueField[] data) {
+        int[] cols = new int[data.length];
+        int total_size = 0;
+        byte[][] store = new byte[data.length][];
+
+        for (int i = 0; i < data.length; i++) {
+            byte[] c = getMeByte(data[i]);
+            total_size += c.length;
+            store[data[i].getOrder()] = c;
+            cols[i] = total_size;
+        }
+
+        byte[] b = new byte[total_size + cols.length * 2 + 4];
+        int l = 0;
+        byte[] buffer = intArrToByte(0, 2);
+        for (int j = 0; j < buffer.length; j++)
+            b[l++] = buffer[j];
+
+        buffer = intArrToByte(b.length - 4, 2);
+        for (int j = 0; j < buffer.length; j++)
+            b[l++] = buffer[j];
+
+        for (int j = 0; j < cols.length; j++) {
+            buffer = intArrToByte(cols[j], 2);
+            for (int k = 0; k < buffer.length; k++)
+                b[l++] = buffer[k];
+        }
+
+        for (int i = 0; i < store.length; i++) {
+            for (int j = 0; j < store[i].length; j++) {
+                b[l++] = store[i][j];
+            }
+        }
+        return b;
+    }
+
+    public boolean insertDataIndex(ValueField[] data) throws PageOverflow, IOException {
+        byte[] byte_row = make_byte_row_index(data);
+        if (!safe_to_store(byte_row, data.length)) {
+            throw new DavisBaseExceptions.PageOverflow();
+        }
+
+        offset2 += 1;
+        int[] new_pos = new int[offset2];
+        for (int i = 0; i < offset10.length; i++) {
+            new_pos[i] = offset10[i];
+        }
+        offset4 -= byte_row.length;
+        offset10 = new_pos;
+        offset10[offset2 - 1] = offset4;
+        byte[][] new_all_data = new byte[offset2][];
+        for (int i = 0; i < all_data.length; i++) {
+            new_all_data[i] = all_data[i];
+        }
+        all_data = new_all_data;
+        all_data[offset2 - 1] = byte_row;
+
+        page_writer();
+
+        return true;
+    }
 }

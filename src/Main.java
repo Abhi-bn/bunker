@@ -4,6 +4,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("This is Bunker");
         DBEngine db = new DBEngine();
+        db.createDB("student");
         db.connect("student");
         // System.out.println(db.createDB("student"));
         // db.describe();
@@ -14,7 +15,7 @@ public class Main {
         // db.insertInto("NewExptTable", "Hari", "1230 East", "9739356979");
         // db.insertInto("NewExptTable", "Hari", "1230 East", "9739356979");
 
-        // // db.select("NewExptTable", "");
+        // db.select("NewExptTable", "");
         System.out.println(db.delete("NewExptTable", "First", "Hari"));
         db.select("NewExptTable", "");
         // db.describe();

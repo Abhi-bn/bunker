@@ -10,7 +10,4 @@ public class IndexInteriorPage extends Page {
         super.offset0 = Page.supported_offset[2];
     }
 
-    @Override
-    public byte[]
-
 }
