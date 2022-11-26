@@ -1,15 +1,13 @@
 package DavisBase.Pages;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.SupportedTypesConst;
 import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.DavisBaseExceptions;
-import DavisBase.Util.Log;
 import DavisBase.Util.DavisBaseExceptions.PageOverflow;
 
 public abstract class Page {
@@ -66,9 +64,9 @@ public abstract class Page {
         if (field.getType() == 11) {
             return String.valueOf(field.getValue()).getBytes();
         } else if (SupportedTypesConst.isIntTypes(field.getType())) {
-            if (field.getValue() instanceof Boolean) {
+            if (field.getValue() instanceof Boolean)
                 return intArrToByte((Boolean) field.getValue() ? 1 : 0, field.getBytes());
-            }
+
             return intArrToByte((Integer) field.getValue(), field.getBytes());
         } else {
             throw new UnsupportedOperationException("Not implemented Yet");
@@ -126,7 +124,7 @@ public abstract class Page {
         for (int i = 0; i < header.length; i++) {
             page_data[i] = header[i];
         }
-        for (int i = 0; i < offset10.length; i++) {
+        for (int i = 0; i < offset2; i++) {
             if (all_data[i] == null)
                 continue;
             for (int j = 0; j < all_data[i].length; j++) {
@@ -157,7 +155,7 @@ public abstract class Page {
         all_data = new_all_data;
         all_data[offset2 - 1] = byte_row;
 
-        page_writer(false);
+        page_writer();
 
         return true;
     }
@@ -275,43 +273,86 @@ public abstract class Page {
         return byteArrToInt(s, 2);
     }
 
-    public ValueField[][] getAllData(ColumnField[] colmn) {
+    public byte[] get_each_row(int index, boolean with_row_buff) {
+        int size = getLenOfRow(offset10[index]);
+        // extend fof initial row buffer
+        if (with_row_buff)
+            size += 4;
+        byte[] row_info = new byte[size];
+        for (int j = 0; j < size; j++) {
+            if (with_row_buff) {
+                row_info[j] = page_data[offset10[index] + j];
+            } else {
+                row_info[j] = page_data[offset10[index] + 4 + j];
+            }
+        }
+        return row_info;
+    }
+
+    public void loadAllDataInBytes() {
+        for (int i = 0; i < offset2; i++) {
+            all_data[i] = get_each_row(i, true);
+        }
+    }
+
+    public ValueField[][] getAllData(ColumnField[] column) {
         ValueField[][] each_row = new ValueField[offset2][];
         for (int i = 0; i < offset2; i++) {
-            int size = getLenOfRow(offset10[i]);
-            byte[] row_info = new byte[size];
-            for (int j = 0; j < size; j++) {
-                row_info[j] = page_data[offset10[i] + 4 + j];
-            }
-            each_row[i] = extract_from_data(row_info, colmn);
+            byte[] row = get_each_row(i, false);
+            each_row[i] = extract_from_data(row, column);
         }
+
         return each_row;
+    }
+
+    private ValueField get_table_name(ValueField v, ValueField[] columns) {
+        for (int i = 0; i < columns.length; i++) {
+            if (v.getName().equals(columns[i].getName()))
+                return columns[i];
+        }
+        return null;
+    }
+
+    public boolean removeTheseData(ValueField[] data, ValueField[] columns) throws IOException {
+        loadAllDataInBytes();
+        ValueField[][] _data = getAllData(columns);
+        ArrayList<Integer> _to_data = new ArrayList<>();
+        for (int i = 0; i < _data.length; i++) {
+            int match = 0;
+            for (int j = 0; j < data.length; j++) {
+                ValueField val = get_table_name(data[j], _data[i]);
+                if (val.compare(data[j]))
+                    match += 1;
+            }
+            if (match == data.length) {
+                offset2 -= 1;
+                _to_data.add(i);
+            }
+        }
+        byte[][] _all_data = new byte[offset2][];
+        for (int i = 0, k = 0; i < this.all_data.length; i++) {
+            if (_to_data.contains(i))
+                continue;
+            _all_data[k++] = this.all_data[i];
+        }
+        this.all_data = _all_data;
+
+        offset4 = PAGESIZE;
+        int[] _new_offset10 = new int[offset2];
+        // now update the offset positions also
+        for (int j = this.all_data.length - 1; j >= 0; j--) {
+            offset4 -= this.all_data[j].length;
+            _new_offset10[j] = offset4;
+        }
+        this.offset10 = _new_offset10;
+        page_writer();
+        return true;
     }
 
     public int GetPageEndSize() {
         // TODO: based on type of page this will change
         return 512;
     }
-
-    // public boolean createNewPage(RandomAccessFile page) {
-    // try {
-    // long old_seek = page.getFilePointer();
-    // page.write(write_page_back());
-    // page.seek(old_seek);
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // return true;
-    // }
-
-    // public void loadAllPageData(RandomAccessFile page, boolean create_new) throws
-    // IOException, EOFException {
-    // long old_seek = page.getFilePointer();
-    // page_data = new byte[PAGESIZE];
-    // page.read(page_data, 0, PAGESIZE);
-    // loadHeader(page_data, create_new);
-    // page.seek(old_seek);
-    // }
 
     public static int byteArrToInt(byte[] b, int bytesSize) {
         int val = 0;
@@ -329,7 +370,7 @@ public abstract class Page {
 
     // only place you want to seek as every read and write need page pointer to
     // reset
-    private void page_writer(boolean readOnly) throws IOException {
+    private void page_writer() throws IOException {
         long old_seek = _page.getFilePointer();
         _page.write(write_page_back());
         _page.seek(old_seek);

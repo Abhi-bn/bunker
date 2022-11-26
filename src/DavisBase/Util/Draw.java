@@ -10,8 +10,9 @@ public class Draw {
         int[] format = new int[column.length];
         int[] special = new int[column.length];
         int total_length = 0;
+
         for (int j = 0; j < column.length; j++) {
-            if (column[j].getBytes() == -1) {
+            if (column[j].getBytes() == -1 || column[j].getBytes() == 65535) {
                 format[j] = 20;
             } else {
                 format[j] = column[j].getName().length() + 1;
@@ -22,13 +23,14 @@ public class Draw {
             total_length += l;
             special[j] = total_length - 1;
         }
+        // Draw Header
+        draw_line(special, total_length, 0);
+        draw_each_column(format, column);
+        System.out.println();
+        draw_line(special, total_length, 1);
+
+        // Draw the Data
         for (int i = 0; i < values.size(); i++) {
-            if (i == 0) {
-                draw_line(special, total_length, 0);
-                draw_each_field(format, values.get(i), false);
-                System.out.println();
-                draw_line(special, total_length, 1);
-            }
             draw_each_field(format, values.get(i), true);
             System.out.println();
         }
@@ -67,6 +69,18 @@ public class Draw {
             }
         }
         System.out.println();
+    }
+
+    private static void draw_each_column(int[] format, ColumnField[] vf) {
+        for (int j = 0; j < vf.length; j++) {
+            if (j == 0)
+                System.out.print('│');
+            String center = "";
+            center = center(vf[j].getName(), format[j]);
+
+            System.out.format("%" + String.valueOf(
+                    format[j]) + "s │ ", center);
+        }
     }
 
     private static void draw_each_field(int[] format, ValueField[] vf, boolean value) {

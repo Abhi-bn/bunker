@@ -64,4 +64,9 @@ public class DBEngine {
         tb.select(table_name);
         return true;
     }
+
+    public int delete(String table_name, String... columns) {
+        Table tb = new Table(DBPath + "/", table_name);
+        return tb.deleteTableValues(columns);
+    }
 }

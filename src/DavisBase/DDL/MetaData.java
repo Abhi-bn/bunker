@@ -108,7 +108,6 @@ public class MetaData extends Table {
             f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
-            // pg.createNewPage(rf);
             insert(fields);
             rf.close();
             selectRows();
@@ -118,9 +117,18 @@ public class MetaData extends Table {
         return true;
     }
 
+    public ValueField getMeColumnFromName(ValueField[] column, String col_name) {
+        for (int i = 0; i < column.length; i++) {
+            if (column[i].getName().equals(col_name))
+                return column[i];
+        }
+        return null;
+    }
+
     public void insert(String table_name, ColumnField[] fields) {
         ValueField[][] vals = colToValues(table_name, fields, total_rows);
         insert(vals);
+        selectRows();
     }
 
     private ValueField get_table_name(ValueField[] v) {
