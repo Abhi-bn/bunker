@@ -23,7 +23,7 @@ public class MetaData extends Table {
     };
 
     HashMap<String, ValueField[]> tables_info = new HashMap<>();
-
+    HashMap<String, Integer> tables_IDs = new HashMap<>();
     int total_rows = 0;
 
     ColumnField[] AllFields;
@@ -51,7 +51,13 @@ public class MetaData extends Table {
         }
 
         fields = colToValues("METADATA", AllFields, 0);
-        create();
+
+        if (create()) {
+            updateID(name, meta_info.length - 1);
+        } else {
+            // just update data
+            fetch_meta_data();
+        }
     }
 
     ValueField[][] colToValues(String table_name, ColumnField[] allFields, int row) {
@@ -60,10 +66,12 @@ public class MetaData extends Table {
             ValueField[] info = new ValueField[meta_info.length];
             info[0] = new ValueField(row + i, meta_info[ColumnIndexes._id.ordinal()], ColumnIndexes._id.ordinal());
             info[1] = new ValueField(
-                    table_name, meta_info[ColumnIndexes.TABLE.ordinal()],
+                    table_name.toUpperCase(), meta_info[ColumnIndexes.TABLE.ordinal()],
                     ColumnIndexes.TABLE.ordinal());
             info[2] = new ValueField(
-                    allFields[i].getName(), meta_info[ColumnIndexes.COLUMN.ordinal()],
+                    allFields[i].getName()
+                            .toUpperCase(),
+                    meta_info[ColumnIndexes.COLUMN.ordinal()],
                     ColumnIndexes.COLUMN.ordinal());
             info[3] = new ValueField(
                     allFields[i].getType(), meta_info[ColumnIndexes.TYPE.ordinal()],
@@ -93,7 +101,7 @@ public class MetaData extends Table {
     }
 
     public MetaData(String base_path) {
-        super(base_path, "MetaData");
+        super(base_path, "METADATA");
     }
 
     @Override
@@ -101,7 +109,6 @@ public class MetaData extends Table {
         File f = new File(getFilePath());
 
         if (f.exists()) {
-            selectRows();
             return false;
         }
         try {
@@ -110,7 +117,6 @@ public class MetaData extends Table {
             Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
             insert(fields);
             rf.close();
-            selectRows();
         } catch (DavisBaseExceptions.PageOverflow e) {
         } catch (IOException e) {
         }
@@ -125,10 +131,33 @@ public class MetaData extends Table {
         return null;
     }
 
-    public void insert(String table_name, ColumnField[] fields) {
-        ValueField[][] vals = colToValues(table_name, fields, total_rows);
-        insert(vals);
-        selectRows();
+    ColumnField[] generateMeta(String... columns) {
+        ColumnField[] meta_data = new ColumnField[columns.length + 1];
+        String[] id_ = { "_id", "INT", "UNIQUE" };
+        meta_data[0] = new ColumnField(id_, 0);
+        for (int i = 1; i < columns.length + 1; i++) {
+            String[] eachCol = columns[i - 1].split(" ");
+            ColumnField tf = new ColumnField(eachCol, i);
+            meta_data[i] = tf;
+        }
+        return meta_data;
+    }
+
+    public void insert(String table_name, String... columns) {
+        ValueField[][] values = colToValues(table_name, generateMeta(columns),
+                (int) tables_IDs.get(name.toUpperCase()) + 1);
+        insert(values);
+        updateID(name, (int) tables_IDs.get(name.toUpperCase()) + values.length);
+    }
+
+    public void updateID(String table_name, int ID) {
+        fetch_meta_data();
+        ValueField[] condition = {
+                tables_info.get(table_name)[0], new ValueField(
+                        table_name, AllFields[1]) };
+        ValueField[] data = { new ValueField(ID, AllFields[9]) };
+        updateInfo(data, condition, AllFields);
+        fetch_meta_data();
     }
 
     private ValueField get_table_name(ValueField[] v) {
@@ -173,13 +202,31 @@ public class MetaData extends Table {
                 vf.setNullable((int) values.getValue().get(i)[ColumnIndexes.NULLABLE.ordinal()].getValue() > 0);
                 vf.setOrder((int) values.getValue().get(i)[ColumnIndexes.ORDER.ordinal()].getValue());
                 vf.setAccess((int) values.getValue().get(i)[ColumnIndexes.ACCESS.ordinal()].getValue());
-                vf.setValue((int) values.getValue().get(i)[ColumnIndexes.VALUE.ordinal()].getValue());
+                vf.setId((int) values.getValue().get(i)[ColumnIndexes._id.ordinal()].getValue());
+                vf.setValue((int) values.getValue().get(i)[ColumnIndexes._id.ordinal()].getValue());
                 table_d[i] = vf;
+
+                if (vf.getName().equals("_ID")) {
+                    tables_IDs.put(values.getKey(), (Integer) values.getValue().get(i)[ColumnIndexes.VALUE.ordinal()]
+                            .getValue());
+                }
+
             }
             tables_info.put(values.getKey(), table_d);
         }
 
         total_rows = _tables_info.size();
+    }
+
+    public void fetch_meta_data() {
+        File f = new File(getFilePath());
+        try {
+            RandomAccessFile rf = new RandomAccessFile(f, "r");
+            PageController pc = new PageController(rf, false);
+            update_all_tables_info(pc.get_me_data(AllFields));
+            rf.close();
+        } catch (IOException e) {
+        }
     }
 
     public void selectRows() {

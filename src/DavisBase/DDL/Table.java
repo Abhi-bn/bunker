@@ -22,32 +22,18 @@ public class Table {
 
     public Table(String base_path, String table_name) {
         this.path = base_path;
-        this.name = table_name;
-    }
-
-    ColumnField[] generateMeta(String... columns) {
-        ColumnField[] meta_data = new ColumnField[columns.length + 1];
-        String[] id_ = { "_id", "INT", "UNIQUE" };
-        meta_data[0] = new ColumnField(id_, 0);
-        for (int i = 1; i < columns.length + 1; i++) {
-            String[] eachCol = columns[i - 1].split(" ");
-            ColumnField tf = new ColumnField(eachCol, i);
-            meta_data[i] = tf;
-            Log.DEBUG(verbose, meta_data.toString());
-        }
-        return meta_data;
+        this.name = table_name.toUpperCase();
     }
 
     public boolean create(String... columns) {
-        File f = new File(path + name + ".tbl");
+        File f = new File(getFilePath());
         if (f.exists())
             return false;
         try {
             f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            DBEngine.__metadata.insert(name, generateMeta(columns));
+            DBEngine.__metadata.insert(name, columns);
             Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
-
             rf.close();
         } catch (DavisBaseExceptions.PageOverflow e) {
 
@@ -67,12 +53,13 @@ public class Table {
             return false;
         }
         ValueField[][] new_data = new ValueField[1][table_info.length];
-        new_data[0][0] = new ValueField(table_info.length + 1, table_info[0]);
+        new_data[0][0] = new ValueField(DBEngine.__metadata.tables_IDs.get(name) + 1, table_info[0]);
         for (int i = 1; i < table_info.length; i++) {
             ValueField fd = new ValueField(cols[i - 1], table_info[i]);
             new_data[0][i] = fd;
         }
         insert(new_data);
+        DBEngine.__metadata.updateID(name, DBEngine.__metadata.tables_IDs.get(name) + 1);
         return true;
     }
 
@@ -88,13 +75,26 @@ public class Table {
         }
     }
 
-    public void select(String table_name) {
+    public void select(String table_name, String[] cols) {
+        ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
+        ValueField[] to_show = new ValueField[cols.length];
+        for (int i = 0; i < cols.length; i += 1) {
+            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, cols[i].toUpperCase());
+            to_show[i] = field;
+        }
+        ValueField[] filter = new ValueField[0];
+        if (cols.length == 0) {
+            to_show = table_info;
+        }
+        select(table_name, filter, to_show, table_info);
+    }
+
+    public void select(String table_name, ValueField[] to_show, ValueField[] table_info, ColumnField[] column) {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             PageController pc = new PageController(rf, false);
-            ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
-            ArrayList<ValueField[]> data = pc.get_me_data(table_info);
+            ArrayList<ValueField[]> data = pc.select_data(to_show, table_info, column);
             Draw.drawTable(table_info, data);
             rf.close();
         } catch (IOException e) {
@@ -114,8 +114,9 @@ public class Table {
             field.setValue(cols[i + 1]);
             to_delete[i] = field;
         }
-
-        return deleteTableValues(to_delete, table_info);
+        int rows_deleted = deleteTableValues(to_delete, table_info);
+        DBEngine.__metadata.updateID(name, DBEngine.__metadata.tables_IDs.get(name) - rows_deleted);
+        return rows_deleted;
     }
 
     public int deleteTableValues(ValueField[] fields, ValueField[] columns) {
@@ -125,6 +126,36 @@ public class Table {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             PageController pc = new PageController(rf, false);
             rows_deleted = pc.delete_data(fields, columns);
+            rf.close();
+        } catch (IOException e) {
+        }
+        return rows_deleted;
+    }
+
+    public int updateInfo(String[] data, String[] cols) {
+        ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
+        ValueField[] to_update = new ValueField[cols.length / 2];
+        for (int i = 0; i < cols.length; i += 2) {
+            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, cols[i].toUpperCase());
+            field.setValue(cols[i + 1]);
+            to_update[i] = field;
+        }
+        ValueField[] to_update_value = new ValueField[data.length / 2];
+        for (int i = 0; i < data.length; i += 2) {
+            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, data[i].toUpperCase());
+            field.setValue(data[i + 1]);
+            to_update_value[i] = field;
+        }
+        return updateInfo(to_update_value, to_update, table_info);
+    }
+
+    public int updateInfo(ValueField[] data, ValueField[] fields, ColumnField[] columns) {
+        File f = new File(getFilePath());
+        int rows_deleted = 0;
+        try {
+            RandomAccessFile rf = new RandomAccessFile(f, "rw");
+            PageController pc = new PageController(rf, false);
+            pc.update_data(data, fields, columns);
             rf.close();
         } catch (IOException e) {
         }

@@ -61,8 +61,13 @@ public class DBEngine {
 
     public boolean select(String table_name, String... columns) {
         Table tb = new Table(DBPath + "/", table_name);
-        tb.select(table_name);
+        tb.select(table_name, columns);
         return true;
+    }
+
+    public int updateInfo(String table_name, String[] data, String[] columns) {
+        Table tb = new Table(DBPath + "/", table_name);
+        return tb.updateInfo(data, columns);
     }
 
     public int delete(String table_name, String... columns) {

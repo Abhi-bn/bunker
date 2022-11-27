@@ -23,7 +23,6 @@ public class PageController {
         long pos = 0;
         try {
             while (true) {
-                System.out.println(access_file.length());
                 if (pos >= access_file.length())
                     break;
                 Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, access_file, create_new);
@@ -42,6 +41,46 @@ public class PageController {
 
         }
         return arr;
+    }
+
+    private ValueField get_column_name(ValueField v, ValueField[] columns) {
+        for (int i = 0; i < columns.length; i++) {
+            if (v.getName().equals(columns[i].getName()))
+                return columns[i];
+        }
+        return null;
+    }
+
+    public ArrayList<ValueField[]> select_data(ValueField[] data, ValueField[] req_col, ColumnField[] column) {
+        ArrayList<ValueField[]> arr = get_me_data(column);
+        ArrayList<Integer> _to_data = new ArrayList<>();
+        for (int i = 0; i < arr.size(); i++) {
+            int match = 0;
+            for (int j = 0; j < data.length; j++) {
+                ValueField val = get_column_name(data[j], arr.get(i));
+                if (val.compare(data[j]))
+                    match += 1;
+            }
+            if (match == data.length)
+                _to_data.add(i);
+        }
+        ArrayList<ValueField[]> filtered_data = new ArrayList<>();
+        for (int i = 0; i < arr.size(); i++) {
+            if (!_to_data.contains(i))
+                continue;
+            filtered_data.add(arr.get(i));
+        }
+        ArrayList<ValueField[]> filter = new ArrayList<>();
+        for (int i = 0; i < filtered_data.size(); i++) {
+            ValueField[] fil = new ValueField[req_col.length];
+            for (int j = 0; j < req_col.length; j++) {
+                ValueField val = get_column_name(req_col[j], filtered_data.get(i));
+                fil[j] = new ValueField(val.getValue(), req_col[j]);
+            }
+            filter.add(fil);
+        }
+
+        return filter;
     }
 
     public void insert_data(ValueField[][] data) {
@@ -82,7 +121,7 @@ public class PageController {
         }
     }
 
-    public int delete_data(ValueField[] data, ValueField[] columns) {
+    public int delete_data(ValueField[] data, ColumnField[] columns) {
         int pos = 0;
         int rows_deleted = 0;
         while (true) {
@@ -104,6 +143,38 @@ public class PageController {
             }
         }
         return rows_deleted;
+    }
+
+    public void update_data(ValueField[] data, ValueField[] condition, ColumnField[] columns) {
+        ValueField[] dum = new ValueField[columns.length];
+        for (int i = 0; i < columns.length; i++) {
+            dum[i] = new ValueField(0, columns[i]);
+        }
+
+        ArrayList<ValueField[]> to_be_updated = select_data(condition, dum, columns);
+        for (int i = 0; i < to_be_updated.size(); i++) {
+            for (int j = 0; j < data.length; j++) {
+                to_be_updated.get(i)[data[j].getOrder()].setValue(data[j].getValue());
+            }
+        }
+        ValueField[][] vals = new ValueField[to_be_updated.size()][columns.length];
+        for (int i = 0; i < vals.length; i++) {
+            for (int j = 0; j < vals[i].length; j++) {
+                vals[i][j] = to_be_updated.get(i)[j];
+            }
+        }
+        try {
+            access_file.seek(0);
+        } catch (IOException e) {
+
+        }
+        delete_data(condition, columns);
+        try {
+            access_file.seek(0);
+        } catch (IOException e) {
+
+        }
+        insert_data(vals);
     }
 
 }

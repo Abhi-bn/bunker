@@ -263,7 +263,7 @@ public abstract class Page {
                 bt[k] = row_info[start + j];
             }
             l += data_s;
-            val[i] = new ValueField(getMeObject(bt, column[i]), column[i]);
+            val[i] = new ValueField(bt, column[i]);
         }
         return val;
     }
@@ -301,11 +301,10 @@ public abstract class Page {
             byte[] row = get_each_row(i, false);
             each_row[i] = extract_from_data(row, column);
         }
-
         return each_row;
     }
 
-    private ValueField get_table_name(ValueField v, ValueField[] columns) {
+    private ValueField get_column_name(ValueField v, ValueField[] columns) {
         for (int i = 0; i < columns.length; i++) {
             if (v.getName().equals(columns[i].getName()))
                 return columns[i];
@@ -313,14 +312,14 @@ public abstract class Page {
         return null;
     }
 
-    public boolean removeTheseData(ValueField[] data, ValueField[] columns) throws IOException {
+    public boolean removeTheseData(ValueField[] data, ColumnField[] columns) throws IOException {
         loadAllDataInBytes();
         ValueField[][] _data = getAllData(columns);
         ArrayList<Integer> _to_data = new ArrayList<>();
         for (int i = 0; i < _data.length; i++) {
             int match = 0;
             for (int j = 0; j < data.length; j++) {
-                ValueField val = get_table_name(data[j], _data[i]);
+                ValueField val = get_column_name(data[j], _data[i]);
                 if (val.compare(data[j]))
                     match += 1;
             }
