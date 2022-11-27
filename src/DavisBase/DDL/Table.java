@@ -14,6 +14,8 @@ import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.Draw;
 import DavisBase.Util.Log;
+import DavisBase.Util.DavisBaseExceptions.DuplicateValueException;
+import DavisBase.Util.DavisBaseExceptions.NullInsertException;
 
 public class Table {
     static boolean verbose = true;
@@ -72,8 +74,21 @@ public class Table {
             ValueField fd = new ValueField(cols[i - 1], table_info[i]);
             new_data[0][i] = fd;
         }
-        insert(new_data);
-        return true;
+        boolean validateDataFlag = false;
+        try {
+            validateDataFlag = validateData(table_info, new_data);
+        } catch (NullInsertException e) {
+            System.out.println("Trying to insert a null value to a not nullable field");
+            return false;
+        } catch (DuplicateValueException e) {
+            System.out.println("Unique value constraint violated, data cannot be inserted");
+            return false;
+        }
+        if (validateDataFlag) {
+            insert(new_data);
+            return true;
+        }
+        return false;
     }
 
     public void insert(ValueField[][] fields) {
@@ -88,15 +103,30 @@ public class Table {
         }
     }
 
-    public void select(String table_name) {
+    public void select(String table_name, String... columns) {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             PageController pc = new PageController(rf, false);
             ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
-            ArrayList<ValueField[]> data = pc.get_me_data(table_info);
-            Draw.drawTable(table_info, data);
-            rf.close();
+            boolean validate = true;
+            if (columns.length != 0) {
+                validate = validateSelectFields(table_info, columns);
+            }
+            if (validate) {
+                ArrayList<ValueField[]> data = pc.get_me_data(table_info);
+                if (columns.length == 0) {
+                    Draw.drawTable(table_info, data);
+                } else {
+                    ArrayList<ValueField> selectedColumnsData = selectColumns(table_info, columns);
+                    data = updateData(table_info, data, columns);
+                    ArrayList<ValueField[]> selectedData = selectData(data, columns);
+                    Draw.drawTable(selectedColumnsData.toArray(), selectedData);
+                }
+                rf.close();
+            } else {
+                System.out.println("Column not found for this table, check your query");
+            }
         } catch (IOException e) {
         }
     }
@@ -194,4 +224,63 @@ public class Table {
         }
     }
 
+    public boolean validateData(ValueField[] table_info, ValueField[][] newData)
+            throws NullInsertException, DuplicateValueException {
+        File f = new File(getFilePath());
+        ArrayList<ValueField[]> data = new ArrayList<>();
+        try {
+            RandomAccessFile rf = new RandomAccessFile(f, "rw");
+            PageController pc = new PageController(rf, false);
+            data = pc.get_me_data(table_info);
+            rf.close();
+        } catch (IOException e) {
+            return false;
+        }
+
+        ArrayList<Integer> uniqueOrder = new ArrayList<>();
+        for (ValueField info : table_info) {
+            int order = info.getOrder();
+            if (info.getNullable()) {
+                for (ValueField newVf : newData[0]) {
+                    if (newVf.getValue() == null) {
+                        throw new DavisBaseExceptions.NullInsertException();
+                    }
+                }
+            }
+            if (info.getUnique()) {
+                uniqueOrder.add(order);
+            }
+        }
+
+        if (uniqueOrder.size() != 0) {
+            for (ValueField[] existingVal : data) {
+                for (ValueField valueField : existingVal) {
+                    for (Integer integer : uniqueOrder) {
+                        if (integer == 0)
+                            continue;
+                        if (valueField.getOrder() == integer) {
+                            for (ValueField newVf : newData[0]) {
+                                if (valueField.compare(newVf)) {
+                                    throw new DavisBaseExceptions.DuplicateValueException();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean validateSelectFields(ValueField[] table_info, String... columns) {
+        int found = 0;
+        for (ValueField info : table_info) {
+            for (String columnName : columns) {
+                if (columnName.equalsIgnoreCase(info.getName())) {
+                    found++;
+                }
+            }
+        }
+        return columns.length == found ? true : false;
+    }
 }
