@@ -109,25 +109,11 @@ public class Table {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             PageController pc = new PageController(rf, false);
             ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
-            boolean validate = true;
-            if (columns.length != 0) {
-                validate = validateSelectFields(table_info, columns);
-            }
-            if (validate) {
-                ArrayList<ValueField[]> data = pc.get_me_data(table_info);
-                if (columns.length == 0) {
-                    Draw.drawTable(table_info, data);
-                } else {
-                    ArrayList<ValueField> selectedColumnsData = selectColumns(table_info, columns);
-                    data = updateData(table_info, data, columns);
-                    ArrayList<ValueField[]> selectedData = selectData(data, columns);
-                    Draw.drawTable(selectedColumnsData.toArray(), selectedData);
-                }
-                rf.close();
-            } else {
-                System.out.println("Column not found for this table, check your query");
-            }
-        } catch (IOException e) {
+            ArrayList<ValueField[]> data = pc.get_me_data(table_info);
+            Draw.drawTable(table_info, data);
+            rf.close();
+        } catch (Exception e) {
+
         }
     }
 
