@@ -83,4 +83,14 @@ public class DBEngine {
         tb.insertIntoIndex(table_name, columnName, /* columnName */ "");
         return true;
     }
+
+    public boolean dropDataBase(String databaseName) {
+        DBFile = new File(databaseName);
+        if (checkIfPathExists(DBFile)) {
+            return deleteDirectory(DBFile);
+        } else {
+            System.out.println("DataBase doesnt exist");
+            return false;
+        }
+    }
 }
