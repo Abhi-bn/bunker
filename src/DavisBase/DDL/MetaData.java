@@ -184,8 +184,9 @@ public class MetaData extends Table {
                 values.getValue().sort(new Comparator<ValueField[]>() {
                     @Override
                     public int compare(ValueField[] arg0, ValueField[] arg1) {
-                        return (int) arg0[ColumnIndexes.ORDER.ordinal()].getValue()
-                                - (int) arg1[ColumnIndexes.ORDER.ordinal()]
+                        // Since Order field is short type
+                        return (short) arg0[ColumnIndexes.ORDER.ordinal()].getValue()
+                                - (short) arg1[ColumnIndexes.ORDER.ordinal()]
                                         .getValue();
                     }
                 });
@@ -196,12 +197,12 @@ public class MetaData extends Table {
             for (int i = 0; i < values.getValue().size(); i++) {
                 ValueField vf = new ValueField(0, get_table_name(values.getValue().get(0)));
                 vf.setName((String) values.getValue().get(i)[ColumnIndexes.COLUMN.ordinal()].getValue());
-                vf.setType((int) values.getValue().get(i)[ColumnIndexes.TYPE.ordinal()].getValue());
-                vf.setBytes((int) values.getValue().get(i)[ColumnIndexes.BYTES.ordinal()].getValue());
-                vf.setUnique((int) values.getValue().get(i)[ColumnIndexes.UNIQUE.ordinal()].getValue() > 0);
-                vf.setNullable((int) values.getValue().get(i)[ColumnIndexes.NULLABLE.ordinal()].getValue() > 0);
-                vf.setOrder((int) values.getValue().get(i)[ColumnIndexes.ORDER.ordinal()].getValue());
-                vf.setAccess((int) values.getValue().get(i)[ColumnIndexes.ACCESS.ordinal()].getValue());
+                vf.setType((short) values.getValue().get(i)[ColumnIndexes.TYPE.ordinal()].getValue());
+                vf.setBytes((short) values.getValue().get(i)[ColumnIndexes.BYTES.ordinal()].getValue());
+                vf.setUnique((short) values.getValue().get(i)[ColumnIndexes.UNIQUE.ordinal()].getValue() > 0);
+                vf.setNullable((short) values.getValue().get(i)[ColumnIndexes.NULLABLE.ordinal()].getValue() > 0);
+                vf.setOrder((short) values.getValue().get(i)[ColumnIndexes.ORDER.ordinal()].getValue());
+                vf.setAccess((short) values.getValue().get(i)[ColumnIndexes.ACCESS.ordinal()].getValue());
                 vf.setId((int) values.getValue().get(i)[ColumnIndexes._id.ordinal()].getValue());
                 vf.setValue((int) values.getValue().get(i)[ColumnIndexes._id.ordinal()].getValue());
                 table_d[i] = vf;

@@ -77,7 +77,7 @@ public class SupportedTypesConst {
         TypesToBytes.put(TIME, 4);
         TypesToBytes.put(DATETIME, 8);
         TypesToBytes.put(DATE, 8);
-        TypesToBytes.put(TEXT, -1);
+        TypesToBytes.put(TEXT, 0);
     }
 
     public static String getTypeStrBytes(String type) {

@@ -14,6 +14,8 @@ import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.Draw;
 import DavisBase.Util.Log;
+import DavisBase.Util.DavisBaseExceptions.DuplicateValueException;
+import DavisBase.Util.DavisBaseExceptions.NullInsertException;
 
 public class Table {
     static boolean verbose = true;
@@ -58,8 +60,19 @@ public class Table {
             ValueField fd = new ValueField(cols[i - 1], table_info[i]);
             new_data[0][i] = fd;
         }
-        insert(new_data);
-        DBEngine.__metadata.updateID(name, DBEngine.__metadata.tables_IDs.get(name) + 1);
+
+        boolean validateDataFlag = false;
+        try {
+            validateDataFlag = validateData(table_info, new_data[0]);
+            insert(new_data);
+            DBEngine.__metadata.updateID(name, DBEngine.__metadata.tables_IDs.get(name) + 1);
+        } catch (NullInsertException e) {
+            System.out.println("Trying to insert a null value to a not nullable field");
+            return false;
+        } catch (DuplicateValueException e) {
+            System.out.println("Unique value constraint violated, data cannot be inserted");
+            return false;
+        }
         return true;
     }
 
@@ -90,6 +103,7 @@ public class Table {
     }
 
     public void select(String table_name, ValueField[] to_show, ValueField[] table_info, ColumnField[] column) {
+
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
@@ -98,6 +112,7 @@ public class Table {
             Draw.drawTable(table_info, data);
             rf.close();
         } catch (IOException e) {
+
         }
     }
 
@@ -160,5 +175,112 @@ public class Table {
         } catch (IOException e) {
         }
         return rows_deleted;
+    }
+
+    public String getIndexFilePath(String indexName) {
+        return path + indexName + ".ndx";
+    }
+
+    public void insertIntoIndex(String tableName, String columnName, Object value) {
+        ValueField[] cols = DBEngine.__metadata.tables_info.get(tableName);
+        int colDataType = 0;
+        boolean found = false;
+        for (ValueField valueField : cols) {
+            if (valueField.getName().equals(columnName)) {
+                colDataType = valueField.getType();
+                found = true;
+                break;
+            }
+        }
+
+        ValueField[][] valueField = new ValueField[1][4];
+        if (found) {
+            valueField[0][0] = new ValueField(123, cols[0]);
+            valueField[0][0].setOrder(0);
+            valueField[0][0].setName("numberOfIndexes");
+            valueField[0][0].setType(3);
+            valueField[0][0].setValue(0);
+
+            valueField[0][1] = new ValueField(123, cols[0]);
+            valueField[0][1].setOrder(1);
+            valueField[0][1].setName("indexType");
+            valueField[0][1].setType(3);
+            valueField[0][1].setValue(colDataType);
+
+            valueField[0][2] = new ValueField(123, cols[0]);
+            valueField[0][2].setOrder(2);
+            valueField[0][2].setName("indexValue");
+            valueField[0][2].setType(colDataType);
+            valueField[0][2].setValue(value);
+
+            valueField[0][3] = new ValueField(123, cols[0]);
+            valueField[0][3].setOrder(3);
+            valueField[0][3].setName("indexRowId");
+            valueField[0][3].setType(3);
+            valueField[0][3].setValue(0);
+        }
+
+        else {
+            System.out.println("Index column not found");
+            return;
+        }
+
+        insertIndex(valueField);
+    }
+
+    public void insertIndex(ValueField[][] fields) {
+        File f = new File(getIndexFilePath("Way.row_id"));
+        try {
+            RandomAccessFile rf = new RandomAccessFile(f, "rw");
+            PageController pc = new PageController(rf, false);
+            pc.insert_data_index(fields);
+            rf.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean validateData(ValueField[] table_info, ValueField[] newData)
+            throws NullInsertException, DuplicateValueException {
+
+        File f = new File(getFilePath());
+        ArrayList<ValueField[]> data = new ArrayList<>();
+        try {
+            RandomAccessFile rf = new RandomAccessFile(f, "rw");
+            PageController pc = new PageController(rf, false);
+            data = pc.get_me_data(table_info);
+            rf.close();
+        } catch (IOException e) {
+            return false;
+        }
+        for (ValueField newVf : newData) {
+            if (!newVf.isNullValid()) {
+                throw new DavisBaseExceptions.NullInsertException();
+            }
+        }
+
+        for (ValueField[] existingVal : data) {
+            for (ValueField newVf : newData) {
+                if (!newVf.getUnique())
+                    continue;
+                ValueField valueField = DBEngine.__metadata.getMeColumnFromName(existingVal, newVf.getName());
+                if (valueField.compare(newVf)) {
+                    throw new DavisBaseExceptions.DuplicateValueException();
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean validateSelectFields(ValueField[] table_info, String... columns) {
+        int found = 0;
+        for (ValueField info : table_info) {
+            for (String columnName : columns) {
+                if (columnName.equalsIgnoreCase(info.getName())) {
+                    found++;
+                }
+            }
+        }
+        return columns.length == found ? true : false;
     }
 }

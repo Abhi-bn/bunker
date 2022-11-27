@@ -12,7 +12,7 @@ public class Draw {
         int total_length = 0;
 
         for (int j = 0; j < column.length; j++) {
-            if (column[j].getBytes() == -1 || column[j].getBytes() == 65535) {
+            if (column[j].getBytes() == 0) {
                 format[j] = 20;
             } else {
                 format[j] = column[j].getName().length() + 1;

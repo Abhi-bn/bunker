@@ -78,6 +78,10 @@ public class ColumnField {
         return order;
     }
 
+    public Boolean isNullValid() {
+        return this.getNullable();
+    }
+
     public ColumnField(String[] cols, int order) {
         filter_col_data(cols);
         validateColORThrow(cols);

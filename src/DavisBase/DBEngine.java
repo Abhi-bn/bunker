@@ -2,6 +2,7 @@ package DavisBase;
 
 import java.io.File;
 
+import DavisBase.DDL.Index;
 import DavisBase.DDL.MetaData;
 import DavisBase.DDL.Table;
 
@@ -56,6 +57,8 @@ public class DBEngine {
     public boolean insertInto(String table_name, String... columns) {
         Table tb = new Table(DBPath + "/", table_name);
         tb.insertInto(columns);
+        // Index index = new Index(DBPath, table_name, "row_id");
+        // index.create();
         return true;
     }
 
@@ -73,5 +76,12 @@ public class DBEngine {
     public int delete(String table_name, String... columns) {
         Table tb = new Table(DBPath + "/", table_name);
         return tb.deleteTableValues(columns);
+    }
+
+    public boolean createIndex(String table_name, String columnName) {
+        // TODO:CODE TO TRAVERSE ALL RECORDS IN THE TABLE AND ADD TO INDEX FILE
+        Table tb = new Table(DBPath + "/", table_name);
+        tb.insertIntoIndex(table_name, columnName, /* columnName */ "");
+        return true;
     }
 }

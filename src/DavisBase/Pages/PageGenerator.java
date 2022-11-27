@@ -11,7 +11,7 @@ public final class PageGenerator {
             throws DavisBaseExceptions.PageOverflow, IOException, EOFException {
         switch (type) {
             case IndexInterior:
-                throw new UnsupportedOperationException("Not implemented Yet");
+                return new IndexInteriorPage(page, create_new);
             case TableInterior:
                 throw new UnsupportedOperationException("Not implemented Yet");
             case IndexLeaf:
