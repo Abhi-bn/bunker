@@ -99,7 +99,7 @@ public class Table {
             to_show = table_info;
         }
 
-        for (int i = 0; i < filter.length; i += 2) {
+        for (int i = 0; i < data.length; i += 2) {
             ValueField field = MetaData.getMeColumnFromName(table_info, data[i].toUpperCase());
             field.setValue(data[i + 1]);
             filter[i / 2] = field;

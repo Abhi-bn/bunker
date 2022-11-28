@@ -49,13 +49,12 @@ public class ValueField extends ColumnField {
     }
 
     public boolean compare(ValueField vf) {
-        if (this.getValue() instanceof String) {
-            if (this.getValue().equals(vf.getValue()))
-                return true;
-        } else if (this.getValue() instanceof Integer) {
-            return (Integer) this.getValue() == (Integer) vf.getValue();
-        }
-        return false;
+        // if (this.getValue() instanceof String) {
+        // if (this.getValue().equals(vf.getValue()))
+        // return true;
+        // } else if (this.getValue() instanceof Integer) {
+        return this.getValue().equals(vf.getValue());
+        // return false;
     }
 
     private Object getMeObject(Object field) {

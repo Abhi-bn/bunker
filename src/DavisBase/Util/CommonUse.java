@@ -153,7 +153,7 @@ public class CommonUse {
         return whereColumns;
     }
 
-    public static String[] deletePrep(String command) {
+    public static String[] wherePrep(String command) {
         command = CommonUse.removeBegning(command, 3);
         String whereCondition = CommonUse.splitGenerator(command, "where")[1];
         String[] whereConditionssArray = CommonUse.splitGenerator(whereCondition, ",");
@@ -167,5 +167,13 @@ public class CommonUse {
             }
         }
         return whereColumns;
+    }
+
+    public static String[] selectWhereCols(String command) {
+        String[] fromSplit = command.split("from");
+        System.out.println(fromSplit);
+        String[] cols = splitGenerator(fromSplit[0], ",");
+        return cols;
+
     }
 }

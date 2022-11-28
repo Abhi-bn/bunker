@@ -58,8 +58,10 @@ public class Commands {
                 System.out.println("Case: CREATE");
                 if (userCommand.toLowerCase().contains("database")) {
                     parseCreateDatabase(userCommand);
-                } else {
+                } else if (userCommand.toLowerCase().contains("table")) {
                     parseCreateTable(userCommand);
+                } else {
+                    System.out.println(Settings.getSyntaxError());
                 }
                 break;
             case "insert":
@@ -199,7 +201,7 @@ public class Commands {
     public static void parseDelete(String command) {
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
-            db.delete(commandTokens.get(2), CommonUse.deletePrep(command));
+            db.delete(commandTokens.get(2), CommonUse.wherePrep(command));
         } else {
             System.out.println(Settings.getdataBaseTableNotFound());
         }
@@ -230,6 +232,7 @@ public class Commands {
         System.out.println("Stub: This is the dropTable method.");
         if (commandTokens.size() != 3) {
             System.out.println(Settings.getSyntaxError());
+
             return;
         }
         if (!Settings.getDataBaseSelected()) {
@@ -250,25 +253,63 @@ public class Commands {
         return;
     }
 
-    /**
-     * Stub method for executing queries
-     */
     public static void parseQuery(String command) {
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (commandTokens.size() < 3) {
             System.out.println(Settings.getSyntaxError());
             return;
         }
-        if (commandTokens.contains("*")) {
-            db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(3));
-            // db.select(commandTokens.get(3));
+        String[] array = new String[0];
+
+        if (commandTokens.contains("where") && commandTokens.contains("*")) {
+            if (db.checkIfTableExists(Settings.getDataBaseName(),
+                    commandTokens.get(commandTokens.indexOf("from") + 1))) {
+                String[] whereSelectClause = CommonUse.wherePrep(command);
+                db.select(commandTokens.get(commandTokens.indexOf("from")
+                        + 1), whereSelectClause,
+                        array);
+            } else {
+                System.out.println(Settings.getdataBaseTableNotFound());
+                return;
+            }
+        } else if (commandTokens.contains("*")) {
+            if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(3))) {
+                db.select(commandTokens.get(3), array, array);
+            } else {
+                System.out.println(Settings.getdataBaseTableNotFound());
+                return;
+            }
+
         } else if (!commandTokens.contains("where")) {
-            db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(commandTokens.size() - 1));
-            command = CommonUse.removeBegning(command, 1);
-            command = CommonUse.removeEnd(command, 2);
-            String selectColumnString[] = CommonUse.splitGenerator(command, ",");
-            db.select(commandTokens.get(commandTokens.size() - 1), selectColumnString);
+            if (db.checkIfTableExists(Settings.getDataBaseName(),
+                    commandTokens.get(commandTokens.size() - 1))) {
+                command = CommonUse.removeBegning(command, 1);
+                command = CommonUse.removeEnd(command, 2);
+                String selectColumnString[] = CommonUse.splitGenerator(command, ",");
+                db.select(commandTokens.get(commandTokens.size() - 1), array,
+                        selectColumnString);
+            } else {
+                System.out.println(Settings.getdataBaseTableNotFound());
+                return;
+            }
+        } else if (commandTokens.contains("where") && !commandTokens.contains("*")) {
+            if (db.checkIfTableExists(Settings.getDataBaseName(),
+                    commandTokens.get(commandTokens.indexOf("from") + 1))) {
+                command = CommonUse.removeBegning(command, 1);
+                String selectColumnString[] = CommonUse.selectWhereCols(command);
+                String[] whereSelectClause = CommonUse.wherePrep(command);
+                System.out.println(commandTokens.get(commandTokens.size() - 1));
+                System.out.println(whereSelectClause[0]);
+                System.out.println(whereSelectClause[1]);
+                System.out.println(selectColumnString[0]);
+                db.select(commandTokens.get(commandTokens.indexOf("from") + 1), whereSelectClause,
+                        selectColumnString);
+            } else {
+                System.out.println(Settings.getdataBaseTableNotFound());
+                return;
+            }
         }
+        // else if((commandTokens.contains("where"))
     }
 
     /**
