@@ -1,6 +1,6 @@
 package DavisBase.TypeSupports;
 
-import DavisBase.Pages.Page;
+import DavisBase.Util.CommonUse;
 
 public class ValueField extends ColumnField {
 
@@ -82,12 +82,12 @@ public class ValueField extends ColumnField {
             return new String(field);
         } else if (SupportedTypesConst.isIntTypes(getType())) {
             if (this.getType() == 1 || this.getType() == 2)
-                return (short) Page.byteArrToInt(field, getBytes());
-            return Page.byteArrToInt(field, getBytes());
+                return (short) CommonUse.byteArrToInt(field, getBytes());
+            return CommonUse.byteArrToInt(field, getBytes());
         } else if (getType() == 5) {
-            return Page.byteArrayToFloat(field);
+            return CommonUse.byteArrayToFloat(field);
         } else if (getType() == 6) {
-            return Page.byteArrayToDouble(field);
+            return CommonUse.byteArrayToDouble(field);
         } else {
             throw new UnsupportedOperationException("Not implemented Yet");
         }
@@ -99,5 +99,23 @@ public class ValueField extends ColumnField {
             dum[i] = new ValueField(0, columns[i]);
         }
         return dum;
+    }
+
+    public byte[] getByteValue() {
+        if (getType() == 11) {
+            return String.valueOf(getValue()).getBytes();
+        } else if (SupportedTypesConst.isIntTypes(getType())) {
+            if (getValue() instanceof Boolean)
+                return CommonUse.intToByteArr((Boolean) getValue() ? 1 : 0, getBytes());
+            if (getValue() instanceof Short)
+                return CommonUse.intToByteArr((Short) getValue(), getBytes());
+            return CommonUse.intToByteArr((Integer) getValue(), getBytes());
+        } else if (getType() == 5) {
+            return CommonUse.floatToByteArray((float) getValue(), getBytes());
+        } else if (getType() == 6) {
+            return CommonUse.doubleToByteArray((double) getValue(), getBytes());
+        } else {
+            throw new UnsupportedOperationException("Not implemented Yet");
+        }
     }
 }

@@ -2,12 +2,12 @@ package DavisBase.Pages;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import DavisBase.DDL.MetaData;
 import DavisBase.TypeSupports.ColumnField;
-import DavisBase.TypeSupports.SupportedTypesConst;
 import DavisBase.TypeSupports.ValueField;
+import DavisBase.Util.CommonUse;
 import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.DavisBaseExceptions.PageOverflow;
 
@@ -61,41 +61,13 @@ public abstract class Page {
         return offset4 - space_occ > data.length;
     }
 
-    private byte[] getMeByte(ValueField field) {
-        if (field.getType() == 11) {
-            return String.valueOf(field.getValue()).getBytes();
-        } else if (SupportedTypesConst.isIntTypes(field.getType())) {
-            if (field.getValue() instanceof Boolean)
-                return intArrToByte((Boolean) field.getValue() ? 1 : 0, field.getBytes());
-            if (field.getValue() instanceof Short)
-                return intArrToByte((Short) field.getValue(), field.getBytes());
-            return intArrToByte((Integer) field.getValue(), field.getBytes());
-        } else if (field.getType() == 5) {
-            return floatToByteArray((float) field.getValue(), field.getBytes());
-        } else if (field.getType() == 6) {
-            return doubleToByteArray((double) field.getValue(), field.getBytes());
-        } else {
-            throw new UnsupportedOperationException("Not implemented Yet");
-        }
-    }
-
-    private Object getMeObject(byte[] field, ColumnField cField) {
-        if (cField.getType() == 11) {
-            return new String(field);
-        } else if (SupportedTypesConst.isIntTypes(cField.getType())) {
-            return byteArrToInt(field, cField.getBytes());
-        } else {
-            throw new UnsupportedOperationException("Not implemented Yet");
-        }
-    }
-
     private byte[] make_byte_row(ValueField[] data) {
         int[] cols = new int[data.length];
         int total_size = 0;
         byte[][] store = new byte[data.length][];
 
         for (int i = 0; i < data.length; i++) {
-            byte[] c = getMeByte(data[i]);
+            byte[] c = data[i].getByteValue();
             total_size += c.length;
             store[data[i].getOrder()] = c;
             cols[i] = total_size;
@@ -103,16 +75,16 @@ public abstract class Page {
 
         byte[] b = new byte[total_size + cols.length * 2 + 4];
         int l = 0;
-        byte[] buffer = intArrToByte(0, 2);
+        byte[] buffer = CommonUse.intToByteArr(0, 2);
         for (int j = 0; j < buffer.length; j++)
             b[l++] = buffer[j];
 
-        buffer = intArrToByte(b.length - 4, 2);
+        buffer = CommonUse.intToByteArr(b.length - 4, 2);
         for (int j = 0; j < buffer.length; j++)
             b[l++] = buffer[j];
 
         for (int j = 0; j < cols.length; j++) {
-            buffer = intArrToByte(cols[j], 2);
+            buffer = CommonUse.intToByteArr(cols[j], 2);
             for (int k = 0; k < buffer.length; k++)
                 b[l++] = buffer[k];
         }
@@ -175,27 +147,27 @@ public abstract class Page {
         byte[] __offset0 = new byte[1];
         for (int j = 0, k = 0; j < __offset0.length; j++, k++)
             __offset0[j] = data[k];
-        offset0 = byteArrToInt(__offset0, 1);
+        offset0 = CommonUse.byteArrToInt(__offset0, 1);
 
         byte[] __offset2 = new byte[2];
         for (int j = 0, k = 2; j < __offset2.length; j++, k++)
             __offset2[j] = data[k];
-        offset2 = byteArrToInt(__offset2, 2);
+        offset2 = CommonUse.byteArrToInt(__offset2, 2);
 
         byte[] __offset4 = new byte[2];
         for (int j = 0, k = 4; j < __offset4.length; j++, k++)
             __offset4[j] = data[k];
-        offset4 = byteArrToInt(__offset4, 2);
+        offset4 = CommonUse.byteArrToInt(__offset4, 2);
 
         byte[] __offset6 = new byte[4];
         for (int j = 0, k = 6; j < __offset6.length; j++, k++)
             __offset6[j] = data[k];
-        offset6 = byteArrToInt(__offset6, 4);
+        offset6 = CommonUse.byteArrToInt(__offset6, 4);
 
         byte[] __offset0A = new byte[4];
         for (int j = 0, k = 10; j < __offset0A.length; j++, k++)
             __offset0A[j] = data[k];
-        offset0A = byteArrToInt(__offset0A, 4);
+        offset0A = CommonUse.byteArrToInt(__offset0A, 4);
         // ignore 2 unused bytes
         int[] __offset10 = new int[offset2];
         for (int j = 0, k = 16; j < offset2; j++) {
@@ -203,7 +175,7 @@ public abstract class Page {
             for (int i = 0; i < 2; i++) {
                 __each_start[i] = data[k + j * 2 + i];
             }
-            __offset10[j] = byteArrToInt(__each_start, 2);
+            __offset10[j] = CommonUse.byteArrToInt(__each_start, 2);
         }
         offset10 = __offset10;
         all_data = new byte[offset2][];
@@ -212,36 +184,36 @@ public abstract class Page {
     private byte[] makeHeader() {
         byte[] data = new byte[16 + 2 * offset2];
         int i = 0;
-        byte[] __offset0 = intArrToByte(offset0, 1);
+        byte[] __offset0 = CommonUse.intToByteArr(offset0, 1);
         for (int j = 0; j < __offset0.length; j++)
             data[i++] = __offset0[j];
 
-        byte[] __offset1 = intArrToByte(offset1, 1);
+        byte[] __offset1 = CommonUse.intToByteArr(offset1, 1);
         for (int j = 0; j < __offset1.length; j++)
             data[i++] = __offset1[j];
 
-        byte[] __offset2 = intArrToByte(offset2, 2);
+        byte[] __offset2 = CommonUse.intToByteArr(offset2, 2);
         for (int j = 0; j < __offset2.length; j++)
             data[i++] = __offset2[j];
 
-        byte[] __offset4 = intArrToByte(offset4, 2);
+        byte[] __offset4 = CommonUse.intToByteArr(offset4, 2);
         for (int j = 0; j < __offset4.length; j++)
             data[i++] = __offset4[j];
 
-        byte[] __offset6 = intArrToByte(offset6, 4);
+        byte[] __offset6 = CommonUse.intToByteArr(offset6, 4);
         for (int j = 0; j < __offset6.length; j++)
             data[i++] = __offset6[j];
 
-        byte[] __offset0A = intArrToByte(offset0A, 4);
+        byte[] __offset0A = CommonUse.intToByteArr(offset0A, 4);
         for (int j = 0; j < __offset0A.length; j++)
             data[i++] = __offset0A[j];
 
-        byte[] __offset0E = intArrToByte(offset0E, 2);
+        byte[] __offset0E = CommonUse.intToByteArr(offset0E, 2);
         for (int j = 0; j < __offset0E.length; j++)
             data[i++] = __offset0E[j];
 
         for (int j = 0; j < offset2; j++) {
-            byte[] __offset10 = intArrToByte(offset10[j], 2);
+            byte[] __offset10 = CommonUse.intToByteArr(offset10[j], 2);
             for (int k = 0; k < __offset10.length; k++)
                 data[i++] = __offset10[k];
         }
@@ -258,7 +230,7 @@ public abstract class Page {
         int[] pos = new int[column.length];
         for (int i = 0, j = 0; i < column.length * COL_META - 1; i += COL_META, j += 1) {
             byte[] _d = { row_info[i], row_info[i + 1] };
-            pos[j] = byteArrToInt(_d, COL_META);
+            pos[j] = CommonUse.byteArrToInt(_d, COL_META);
         }
         int start = COL_META * column.length;
         int l = 0;
@@ -276,7 +248,7 @@ public abstract class Page {
 
     private int getLenOfRow(int offset) {
         byte[] s = { page_data[offset + 2], page_data[offset + 3] };
-        return byteArrToInt(s, 2);
+        return CommonUse.byteArrToInt(s, 2);
     }
 
     public byte[] get_each_row(int index, boolean with_row_buff) {
@@ -310,14 +282,6 @@ public abstract class Page {
         return each_row;
     }
 
-    private ValueField get_column_name(ValueField v, ValueField[] columns) {
-        for (int i = 0; i < columns.length; i++) {
-            if (v.getName().equals(columns[i].getName()))
-                return columns[i];
-        }
-        return null;
-    }
-
     public boolean removeTheseData(ValueField[] data, ColumnField[] columns) throws IOException {
         loadAllDataInBytes();
         ValueField[][] _data = getAllData(columns);
@@ -325,7 +289,7 @@ public abstract class Page {
         for (int i = 0; i < _data.length; i++) {
             int match = 0;
             for (int j = 0; j < data.length; j++) {
-                ValueField val = get_column_name(data[j], _data[i]);
+                ValueField val = MetaData.getMeColumnFromName(_data[i], data[j].getName());
                 if (val.compare(data[j]))
                     match += 1;
             }
@@ -359,40 +323,6 @@ public abstract class Page {
         return 512;
     }
 
-    public static int byteArrToInt(byte[] b, int bytesSize) {
-        int val = 0;
-        for (int i = 0; i < bytesSize; i++)
-            val += ((b[bytesSize - i - 1] & 0xff) << (i * BYTE_LEN));
-        return val;
-    }
-
-    public static byte[] intArrToByte(int integer, int bytesSize) {
-        byte[] bytes = new byte[bytesSize];
-        for (int i = 0; i < bytesSize; i++)
-            bytes[bytesSize - i - 1] = (byte) (integer >>> (i * BYTE_LEN));
-        return bytes;
-    }
-
-    public static byte[] doubleToByteArray(double value, int bytesSize) {
-        byte[] bytes = new byte[bytesSize];
-        ByteBuffer.wrap(bytes).putDouble(value);
-        return bytes;
-    }
-
-    public static double byteArrayToDouble(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).getDouble();
-    }
-
-    public static byte[] floatToByteArray(float value, int bytesSize) {
-        byte[] bytes = new byte[bytesSize];
-        ByteBuffer.wrap(bytes).putFloat(value);
-        return bytes;
-    }
-
-    public static float byteArrayToFloat(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).getFloat();
-    }
-
     // only place you want to seek as every read and write need page pointer to
     // reset
     private void page_writer() throws IOException {
@@ -415,7 +345,7 @@ public abstract class Page {
         byte[][] store = new byte[data.length][];
 
         for (int i = 0; i < data.length; i++) {
-            byte[] c = getMeByte(data[i]);
+            byte[] c = data[i].getByteValue();
             total_size += c.length;
             store[data[i].getOrder()] = c;
             cols[i] = total_size;
@@ -423,16 +353,16 @@ public abstract class Page {
 
         byte[] b = new byte[total_size + cols.length * 2 + 4];
         int l = 0;
-        byte[] buffer = intArrToByte(0, 2);
+        byte[] buffer = CommonUse.intToByteArr(0, 2);
         for (int j = 0; j < buffer.length; j++)
             b[l++] = buffer[j];
 
-        buffer = intArrToByte(b.length - 4, 2);
+        buffer = CommonUse.intToByteArr(b.length - 4, 2);
         for (int j = 0; j < buffer.length; j++)
             b[l++] = buffer[j];
 
         for (int j = 0; j < cols.length; j++) {
-            buffer = intArrToByte(cols[j], 2);
+            buffer = CommonUse.intToByteArr(cols[j], 2);
             for (int k = 0; k < buffer.length; k++)
                 b[l++] = buffer[k];
         }
