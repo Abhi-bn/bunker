@@ -41,6 +41,16 @@ public class CommonUse {
         return bytes;
     }
 
+    public static long byteArrToLong(byte[] b, int bytesSize) {
+        return ByteBuffer.wrap(b).getLong();
+    }
+
+    public static byte[] longToByteArr(long integer, int bytesSize) {
+        byte[] bytes = new byte[bytesSize];
+        ByteBuffer.wrap(bytes).putLong(integer);
+        return bytes;
+    }
+
     public static byte[] doubleToByteArray(double value, int bytesSize) {
         byte[] bytes = new byte[bytesSize];
         ByteBuffer.wrap(bytes).putDouble(value);
