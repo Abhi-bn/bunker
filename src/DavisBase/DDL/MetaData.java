@@ -123,7 +123,7 @@ public class MetaData extends Table {
         return true;
     }
 
-    public ValueField getMeColumnFromName(ValueField[] column, String col_name) {
+    public static ValueField getMeColumnFromName(ValueField[] column, String col_name) {
         for (int i = 0; i < column.length; i++) {
             if (column[i].getName().equals(col_name))
                 return column[i];
