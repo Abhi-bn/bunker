@@ -261,7 +261,7 @@ public class Commands {
         }
         if (commandTokens.contains("*")) {
             db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(3));
-            db.select(commandTokens.get(3));
+            // db.select(commandTokens.get(3));
         } else if (!commandTokens.contains("where")) {
             db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(commandTokens.size() - 1));
             command = CommonUse.removeBegning(command, 1);
