@@ -1,6 +1,7 @@
 package DavisBase;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import DavisBase.DDL.MetaData;
 import DavisBase.DDL.Table;
@@ -84,6 +85,20 @@ public class DBEngine {
         return true;
     }
 
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
+
+    public boolean checkIfPathExists(File file) {
+        return file.exists();
+    }
+
     public boolean dropDataBase(String databaseName) {
         DBFile = new File(databaseName);
         if (checkIfPathExists(DBFile)) {
@@ -92,5 +107,25 @@ public class DBEngine {
             System.out.println("DataBase doesnt exist");
             return false;
         }
+    }
+
+    public boolean showTables(String databaseName) {
+
+        DBFile = new File(databaseName);
+        if (checkIfPathExists(DBFile)) {
+            String[] dbFiles = DBFile.list();
+            ArrayList<String> tables = new ArrayList<>();
+            for (String string : dbFiles) {
+                System.out.println(string);
+            }
+        } else {
+            System.out.println("DataBase doesnt exist");
+            return false;
+        }
+        return true;
+    }
+
+    public void showDatabases() {
+        DBFile = new File(DBPath);
     }
 }

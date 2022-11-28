@@ -282,4 +282,15 @@ public class Table {
         }
         return columns.length == found ? true : false;
     }
+
+    public boolean exists() {
+        File tableFile = new File(this.getFilePath());
+        return tableFile.exists();
+    }
+
+    public boolean delete() {
+        File tableFile = new File(this.getFilePath());
+        return tableFile.delete();
+    }
+
 }

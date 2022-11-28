@@ -221,10 +221,20 @@ public class Commands {
     // }
 
     public static void show(ArrayList<String> commandTokens) {
-        System.out.println("Command: " + tokensToCommandString(commandTokens));
-        System.out.println("Stub: This is the show method");
-        /* TODO: Your code goes here */
-
+        if (commandTokens.size() != 2) {
+            System.out.println(Settings.getSyntaxError());
+            return;
+        } else {
+            if (commandTokens.get(1).equalsIgnoreCase("tables")) {
+                if (Settings.getDataBaseSelected())
+                    db.showTables(Settings.getDataBaseName());
+                else {
+                    System.out.println(Settings.getDataBaseNotSelected());
+                }
+            } else if (commandTokens.get(1).equalsIgnoreCase("databases")) {
+                db.showDatabases();
+            }
+        }
     }
 
     /*
