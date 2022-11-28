@@ -292,5 +292,4 @@ public class Table {
         File tableFile = new File(this.getFilePath());
         return tableFile.delete();
     }
-
 }

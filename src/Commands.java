@@ -2,9 +2,12 @@ import static java.lang.System.out;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import DavisBase.DBEngine;
 import DavisBase.DDL.Table;
+import DavisBase.Util.CommonUse;
 import DavisBase.Util.Settings;
 import DavisBase.Util.WelcomeScreen;
 
@@ -49,7 +52,7 @@ public class Commands {
                 break;
             case "select":
                 System.out.println("Case: SELECT");
-                parseQuery(commandTokens);
+                parseQuery(userCommand);
                 break;
             case "create":
                 System.out.println("Case: CREATE");
@@ -60,16 +63,16 @@ public class Commands {
                 }
                 break;
             case "insert":
-                System.out.println("Case: INSERT");
-                parseInsert(commandTokens);
+                System.out.println("Case: INSERT INTO");
+                parseInsert(userCommand);
                 break;
             case "delete":
                 System.out.println("Case: DELETE");
-                parseDelete(commandTokens);
+                parseDelete(userCommand);
                 break;
             case "update":
                 System.out.println("Case: UPDATE");
-                parseUpdate(commandTokens);
+                parseUpdate(userCommand);
                 break;
             case "drop":
                 System.out.println("Case: DROP");
@@ -105,13 +108,15 @@ public class Commands {
     static DBEngine db = new DBEngine();
 
     private static void use(ArrayList<String> commandTokens) {
-        if (commandTokens.size() != 2) {
-            System.out.println("SQL ERROR: syntax error, check your command");
+        if (commandTokens.size() != 2 || !db.checkIfDbExists(commandTokens.get(1))) {
+            String error = (commandTokens.size() != 2) ? Settings.getSyntaxError()
+                    : Settings.getdataBaseTableNotFound();
+            System.out.println(error);
+            return;
         }
-        // to do check if the data base exists
         Settings.setDataBaseSelected(true);
         Settings.setDataBaseName(commandTokens.get(1));
-        db.connect("student");
+        db.connect(commandTokens.get(1));
     }
 
     private static void describe(ArrayList<String> commandTokens) {
@@ -140,9 +145,8 @@ public class Commands {
 
     public static void parseCreateTable(String command) {
 
-        System.out.println("Stub: parseCreateTable method");
         ArrayList<String> commandTokens = commandStringToTokenList(command);
-        if (commandTokens.size() != 3) {
+        if (commandTokens.size() < 4) {
             System.out.println(Settings.getSyntaxError());
             return;
         }
@@ -151,74 +155,14 @@ public class Commands {
             return;
         } else {
             Table table = new Table(Settings.getDataBaseName(), commandTokens.get(2));
-            if (!table.exists()) {
+            if (table.exists()) {
                 System.out.println(Settings.getCreateDatabaseAlreadyExists());
                 return;
             }
-            // TODO: need to ask abhinava and add parameters to this function call
-            table.create();
+            String[] columnString = CommonUse.createQueryString(command, 2);
+            db.createTable(commandTokens.get(1), columnString);
         }
     }
-
-    // public static void parseCreateTable(String command) {
-    // /*
-    // * TODO: Before attempting to create new table file, check if the table
-    // already
-    // * exists
-    // */
-
-    // System.out.println("Stub: parseCreateTable method");
-    // System.out.println("Command: " + command);
-    // ArrayList<String> commandTokens = commandStringToTokenList(command);
-
-    // /* Extract the table name from the command string token list */
-    // String tableFileName = commandTokens.get(2) + ".tbl";
-
-    // /* YOUR CODE GOES HERE */
-
-    // /* Code to create a .tbl file to contain table data */
-    // try {
-    // /*
-    // * Create RandomAccessFile tableFile in read-write mode.
-    // * Note that this doesn't create the table file in the correct directory
-    // * structure
-    // */
-
-    // /*
-    // * Create a new table file whose initial size is one page (i.e. page size
-    // number
-    // * of bytes)
-    // */
-    // RandomAccessFile tableFile = new RandomAccessFile("data/user_data/" +
-    // tableFileName, "rw");
-    // tableFile.setLength(Settings.getPageSize());
-
-    // /* Write page header with initial configuration */
-    // tableFile.seek(0);
-    // tableFile.writeInt(0x0D); // Page type
-    // tableFile.seek(0x02);
-    // tableFile.writeShort(0x01FF); // Offset beginning of cell content area
-    // tableFile.seek(0x06);
-    // tableFile.writeInt(0xFFFFFFFF); // Sibling page to the right
-    // tableFile.seek(0x0A);
-    // tableFile.writeInt(0xFFFFFFFF); // Parent page
-    // } catch (Exception e) {
-    // System.out.println(e);
-    // }
-
-    // /*
-    // * Code to insert an entry in the TABLES meta-data for this new table.
-    // * i.e. New row in davisbase_tables if you're using that mechanism for
-    // * meta-data.
-    // */
-
-    // /*
-    // * Code to insert entries in the COLUMNS meta data for each column in the new
-    // * table.
-    // * i.e. New rows in davisbase_columns if you're using that mechanism for
-    // * meta-data.
-    // */
-    // }
 
     public static void show(ArrayList<String> commandTokens) {
         if (commandTokens.size() != 2) {
@@ -240,16 +184,25 @@ public class Commands {
     /*
      * Stub method for inserting a new record into a table.
      */
-    public static void parseInsert(ArrayList<String> commandTokens) {
-        System.out.println("Command: " + tokensToCommandString(commandTokens));
-        System.out.println("Stub: This is the insertRecord method");
-        /* TODO: Your code goes here */
+    public static void parseInsert(String command) {
+        ArrayList<String> commandTokens = commandStringToTokenList(command);
+        if (commandTokens.size() < 4) {
+            System.out.println(Settings.getSyntaxError());
+            return;
+        }
+        if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
+            String[] insertCommand = CommonUse.createQueryString(command, 3);
+            db.insertInto(commandTokens.get(2), insertCommand);
+        }
     }
 
-    public static void parseDelete(ArrayList<String> commandTokens) {
-        System.out.println("Command: " + tokensToCommandString(commandTokens));
-        System.out.println("Stub: This is the deleteRecord method");
-        /* TODO: Your code goes here */
+    public static void parseDelete(String command) {
+        ArrayList<String> commandTokens = commandStringToTokenList(command);
+        if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
+            db.delete(commandTokens.get(2), CommonUse.deletePrep(command));
+        } else {
+            System.out.println(Settings.getdataBaseTableNotFound());
+        }
     }
 
     /**
@@ -300,9 +253,22 @@ public class Commands {
     /**
      * Stub method for executing queries
      */
-    public static void parseQuery(ArrayList<String> commandTokens) {
-        System.out.println("Command: " + tokensToCommandString(commandTokens));
-        System.out.println("Stub: This is the parseQuery method");
+    public static void parseQuery(String command) {
+        ArrayList<String> commandTokens = commandStringToTokenList(command);
+        if (commandTokens.size() < 3) {
+            System.out.println(Settings.getSyntaxError());
+            return;
+        }
+        if (commandTokens.contains("*")) {
+            db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(3));
+            db.select(commandTokens.get(3));
+        } else if (!commandTokens.contains("where")) {
+            db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(commandTokens.size() - 1));
+            command = CommonUse.removeBegning(command, 1);
+            command = CommonUse.removeEnd(command, 2);
+            String selectColumnString[] = CommonUse.splitGenerator(command, ",");
+            db.select(commandTokens.get(commandTokens.size() - 1), selectColumnString);
+        }
     }
 
     /**
@@ -310,9 +276,23 @@ public class Commands {
      * 
      * @param updateString is a String of the user input
      */
-    public static void parseUpdate(ArrayList<String> commandTokens) {
-        System.out.println("Command: " + tokensToCommandString(commandTokens));
-        System.out.println("Stub: This is the parseUpdate method");
+    public static void parseUpdate(String command) {
+        String[] values = { "col1", "1000" };
+        String[] where = { "col1", "10" };
+        db.updateInfo("details", values, where);
+        // ArrayList<String> commandTokens = commandStringToTokenList(command);
+        // if (!commandTokens.contains("set") || !commandTokens.contains("where")) {
+        // System.out.println(Settings.getSyntaxError());
+        // } else {
+        // if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(1)))
+        // {
+        // Map<String, String[]> updateValues = CommonUse.updateQueryPrep(command);
+        // db.updateInfo(commandTokens.get(1), updateValues.get("values"),
+        // updateValues.get("where"));
+        // } else {
+        // System.out.println(Settings.getdataBaseTableNotFound());
+        // }
+        // }
     }
 
     public static String tokensToCommandString(ArrayList<String> commandTokens) {
@@ -358,5 +338,4 @@ public class Commands {
         out.println("\tExit the program.\n");
         out.println(WelcomeScreen.printSeparator("*", 80));
     }
-
 }

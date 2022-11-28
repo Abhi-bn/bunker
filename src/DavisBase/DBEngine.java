@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import DavisBase.DDL.MetaData;
 import DavisBase.DDL.Table;
+import DavisBase.Util.Settings;
 
 public class DBEngine {
     private static String DBPath;
@@ -116,16 +117,32 @@ public class DBEngine {
             String[] dbFiles = DBFile.list();
             ArrayList<String> tables = new ArrayList<>();
             for (String string : dbFiles) {
-                System.out.println(string);
+                String tableName = string.strip().replace(".tbl", "");
+                if (!tables.contains(tableName)) {
+                    tables.add(tableName);
+                    System.out.println(tableName);
+                }
             }
         } else {
-            System.out.println("DataBase doesnt exist");
+            System.out.println(Settings.getdataBaseTableNotFound());
             return false;
         }
         return true;
     }
 
+    // TODO: ADD DATABASES TO A SEPERATE FOLDER AND THEN GET THE NAMES
     public void showDatabases() {
         DBFile = new File(DBPath);
+    }
+
+    public boolean checkIfDbExists(String databaseName) {
+        DBFile = new File(databaseName);
+        return checkIfPathExists(DBFile);
+    }
+
+    public boolean checkIfTableExists(String databaseName, String tableName) {
+        DBFile = new File(DBPath + "/" + tableName);
+        DBFile.mkdir();
+        return checkIfPathExists(DBFile);
     }
 }
