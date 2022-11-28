@@ -9,11 +9,55 @@ import DavisBase.Util.CommonUse;
 
 public class ValueField extends ColumnField {
 
+    enum OPSupport {
+        EQUAL,
+        GREATER,
+        LESS,
+        NOTEQUAL,
+        GREATEREQUAL,
+        LESSEQUAL,
+        UNSUPPORTED
+    };
+
+    boolean null_value = false;
     Object value;
+
+    OPSupport op = OPSupport.EQUAL;
 
     public ValueField(Object value, String[] cols, int order) {
         super(cols, order);
         this.value = getMeObject(value);
+    }
+
+    public OPSupport getOp() {
+        return op;
+    }
+
+    public void setOp(OPSupport op) {
+        this.op = op;
+    }
+
+    public void setOp(String op) {
+        this.op = OpParser(op);
+    }
+
+    public static OPSupport OpParser(String op) {
+        switch (op) {
+            case ">":
+                return OPSupport.GREATER;
+            case "<":
+                return OPSupport.LESS;
+            case "<=":
+                return OPSupport.LESSEQUAL;
+            case ">=":
+                return OPSupport.GREATEREQUAL;
+            case "=":
+                return OPSupport.EQUAL;
+            case "!=":
+                return OPSupport.NOTEQUAL;
+            default:
+                return OPSupport.UNSUPPORTED;
+        }
     }
 
     public ValueField(Object value, ColumnField fd) {
@@ -22,14 +66,6 @@ public class ValueField extends ColumnField {
     }
 
     public Object getValue() {
-        if (type == SupportedTypesConst.DATE) {
-
-            DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-            try {
-                return formatter.parse(formatter.format((Date) value));
-            } catch (Exception e) {
-            }
-        }
         return value;
     }
 
@@ -48,18 +84,104 @@ public class ValueField extends ColumnField {
         this.value = getMeObject(value);
     }
 
+    public Boolean GreaterTypeCheck(ValueField vf) {
+        if (getValue() instanceof Double) {
+            return (Double) this.getValue() > (Double) vf.getValue();
+        } else if (getValue() instanceof Float) {
+            return (Float) this.getValue() > (Double) vf.getValue();
+        } else if (getValue() instanceof Long) {
+            return (Long) this.getValue() > (Long) vf.getValue();
+        } else if (getValue() instanceof Integer) {
+            return (Integer) this.getValue() > (Integer) vf.getValue();
+        } else if (getValue() instanceof Short) {
+            return (Short) this.getValue() > (Short) vf.getValue();
+        } else {
+            return null;
+        }
+    }
+
+    public Boolean LessTypeCheck(ValueField vf) {
+        if (getValue() instanceof Double) {
+            return (Double) this.getValue() < (Double) vf.getValue();
+        } else if (getValue() instanceof Float) {
+            return (Float) this.getValue() < (Double) vf.getValue();
+        } else if (getValue() instanceof Long) {
+            return (Long) this.getValue() < (Long) vf.getValue();
+        } else if (getValue() instanceof Integer) {
+            return (Integer) this.getValue() < (Integer) vf.getValue();
+        } else if (getValue() instanceof Short) {
+            return (Short) this.getValue() < (Short) vf.getValue();
+        } else {
+            return null;
+        }
+    }
+
+    public Boolean LessEQTypeCheck(ValueField vf) {
+        if (getValue() instanceof Double) {
+            return (Double) this.getValue() <= (Double) vf.getValue();
+        } else if (getValue() instanceof Float) {
+            return (Float) this.getValue() <= (Double) vf.getValue();
+        } else if (getValue() instanceof Long) {
+            return (Long) this.getValue() <= (Long) vf.getValue();
+        } else if (getValue() instanceof Integer) {
+            return (Integer) this.getValue() <= (Integer) vf.getValue();
+        } else if (getValue() instanceof Short) {
+            return (Short) this.getValue() <= (Short) vf.getValue();
+        } else {
+            return null;
+        }
+    }
+
+    public Boolean GreaterEQTypeCheck(ValueField vf) {
+        if (getValue() instanceof Double) {
+            return (Double) this.getValue() >= (Double) vf.getValue();
+        } else if (getValue() instanceof Float) {
+            return (Float) this.getValue() >= (Double) vf.getValue();
+        } else if (getValue() instanceof Long) {
+            return (Long) this.getValue() >= (Long) vf.getValue();
+        } else if (getValue() instanceof Integer) {
+            return (Integer) this.getValue() >= (Integer) vf.getValue();
+        } else if (getValue() instanceof Short) {
+            return (Short) this.getValue() >= (Short) vf.getValue();
+        } else {
+            return null;
+        }
+    }
+
     public boolean compare(ValueField vf) {
-        // if (this.getValue() instanceof String) {
-        // if (this.getValue().equals(vf.getValue()))
-        // return true;
-        // } else if (this.getValue() instanceof Integer) {
+        switch (vf.op) {
+            case EQUAL:
+                return this.getValue().equals(vf.getValue());
+            case GREATER:
+                return GreaterTypeCheck(vf);
+            case LESS:
+                return LessTypeCheck(vf);
+            case NOTEQUAL:
+                return !this.getValue().equals(vf.getValue());
+            case GREATEREQUAL:
+                return GreaterEQTypeCheck(vf);
+            case LESSEQUAL:
+                return LessEQTypeCheck(vf);
+            case UNSUPPORTED:
+                throw new UnsupportedOperationException(name);
+        }
         return this.getValue().equals(vf.getValue());
-        // return false;
+    }
+
+    public boolean validate() {
+        return !null_value;
     }
 
     private Object getMeObject(Object field) {
         if (field instanceof byte[]) {
             return ConvertObject((byte[]) field);
+        }
+
+        if (field instanceof String && ((String) field).length() == 0) {
+            null_value = true;
+            if (getType() == 0)
+                return "";
+            return 0;
         }
 
         // If its not string it means its of the write type
@@ -154,9 +276,19 @@ public class ValueField extends ColumnField {
         } else if (getType() == SupportedTypesConst.YEAR) {
             return CommonUse.intToByteArr(((int) getValue()) - 1900, getBytes());
         } else if (getType() == SupportedTypesConst.DATE) {
-            return CommonUse.longToByteArr((long) getValue(), bytes);
+            long epoc = 0;
+            if (getValue() instanceof Date)
+                epoc = ((Date) getValue()).getTime();
+            else
+                epoc = (long) getValue();
+            return CommonUse.longToByteArr(epoc, bytes);
         } else if (getType() == SupportedTypesConst.DATETIME) {
-            return CommonUse.longToByteArr((long) getValue(), bytes);
+            long epoc = 0;
+            if (getValue() instanceof Date)
+                epoc = ((Date) getValue()).getTime();
+            else
+                epoc = (long) getValue();
+            return CommonUse.longToByteArr(epoc, bytes);
         } else if (getType() == SupportedTypesConst.TIME) {
             Time t = (Time) getValue();
             int val = t.getHours() * 60 * 60;

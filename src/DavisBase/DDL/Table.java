@@ -57,12 +57,12 @@ public class Table {
         new_data[0][0] = new ValueField(DBEngine.__metadata.tables_IDs.get(name) + 1, table_info[0]);
         for (int i = 1; i < table_info.length; i++) {
             ValueField fd = new ValueField(cols[i - 1], table_info[i]);
+            // if (!fd.validate()) throw new ;
             new_data[0][i] = fd;
         }
 
-        boolean validateDataFlag = false;
         try {
-            validateDataFlag = validateData(table_info, new_data[0]);
+            validateData(table_info, new_data[0]);
             insert(new_data);
             DBEngine.__metadata.updateID(name, DBEngine.__metadata.tables_IDs.get(name) + 1);
         } catch (NullInsertException e) {
@@ -87,21 +87,22 @@ public class Table {
         }
     }
 
-    public void select(String table_name, String[] data, String[] cols) {
+    public void select(String table_name, String[] where, String[] cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
         ValueField[] to_show = new ValueField[cols.length];
         for (int i = 0; i < cols.length; i += 1) {
             ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
             to_show[i] = field;
         }
-        ValueField[] filter = new ValueField[data.length / 2];
+        ValueField[] filter = new ValueField[where.length / 3];
         if (cols.length == 0) {
             to_show = table_info;
         }
 
-        for (int i = 0; i < data.length; i += 2) {
-            ValueField field = MetaData.getMeColumnFromName(table_info, data[i].toUpperCase());
-            field.setValue(data[i + 1]);
+        for (int i = 0; i < where.length; i += 3) {
+            ValueField field = MetaData.getMeColumnFromName(table_info, where[i].toUpperCase());
+            field.setOp(where[i + 1]);
+            field.setValue(where[i + 2]);
             filter[i / 2] = field;
         }
         select(table_name, filter, to_show, table_info);
@@ -154,11 +155,11 @@ public class Table {
 
     public int updateInfo(String[] data, String[] cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
-        ValueField[] to_update = new ValueField[cols.length / 2];
+        ValueField[] where = new ValueField[cols.length / 2];
         for (int i = 0; i < cols.length; i += 2) {
             ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
             field.setValue(cols[i + 1]);
-            to_update[i / 2] = field;
+            where[i / 2] = field;
         }
         ValueField[] to_update_value = new ValueField[data.length / 2];
         for (int i = 0; i < data.length; i += 2) {
@@ -166,7 +167,7 @@ public class Table {
             field.setValue(data[i + 1]);
             to_update_value[i / 2] = field;
         }
-        return updateInfo(to_update_value, to_update, table_info);
+        return updateInfo(to_update_value, where, table_info);
     }
 
     public int updateInfo(ValueField[] data, ValueField[] fields, ColumnField[] columns) {

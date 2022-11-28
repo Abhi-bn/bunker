@@ -2,7 +2,6 @@ import static java.lang.System.out;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import DavisBase.DBEngine;
@@ -43,19 +42,15 @@ public class Commands {
          */
         switch (commandTokens.get(0).toLowerCase()) {
             case "use":
-                System.out.println("Case: USE");
                 use(commandTokens);
                 break;
             case "show":
-                System.out.println("Case: SHOW");
                 show(commandTokens);
                 break;
             case "select":
-                System.out.println("Case: SELECT");
                 parseQuery(userCommand);
                 break;
             case "create":
-                System.out.println("Case: CREATE");
                 if (userCommand.toLowerCase().contains("database")) {
                     parseCreateDatabase(userCommand);
                 } else if (userCommand.toLowerCase().contains("table")) {
@@ -65,19 +60,15 @@ public class Commands {
                 }
                 break;
             case "insert":
-                System.out.println("Case: INSERT INTO");
                 parseInsert(userCommand);
                 break;
             case "delete":
-                System.out.println("Case: DELETE");
                 parseDelete(userCommand);
                 break;
             case "update":
-                System.out.println("Case: UPDATE");
                 parseUpdate(userCommand);
                 break;
             case "drop":
-                System.out.println("Case: DROP");
                 if (commandTokens.get(1).equalsIgnoreCase("database")) {
                     dropDatabase(commandTokens);
                 }
@@ -86,7 +77,6 @@ public class Commands {
                 }
                 break;
             case "describe":
-                System.out.println("Case: display data of database");
                 describe(commandTokens);
                 break;
             case "help":
@@ -161,8 +151,8 @@ public class Commands {
                 System.out.println(Settings.getCreateDatabaseAlreadyExists());
                 return;
             }
-            String[] columnString = CommonUse.createQueryString(command, 2);
-            db.createTable(commandTokens.get(1), columnString);
+            String[] columnString = CommonUse.createQueryString(command, 3);
+            db.createTable(commandTokens.get(2), columnString);
         }
     }
 
@@ -183,9 +173,6 @@ public class Commands {
         }
     }
 
-    /*
-     * Stub method for inserting a new record into a table.
-     */
     public static void parseInsert(String command) {
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (commandTokens.size() < 4) {
@@ -207,12 +194,7 @@ public class Commands {
         }
     }
 
-    /**
-     * Stub method for dropping tables
-     */
     public static void dropDatabase(ArrayList<String> commandTokens) {
-        System.out.println("Command: " + tokensToCommandString(commandTokens));
-        System.out.println("Stub: This is the dropTable method.");
         if (commandTokens.size() != 3) {
             System.out.println(Settings.getSyntaxError());
         } else {
@@ -226,7 +208,6 @@ public class Commands {
         }
     }
 
-    // TODO need to test this
     public static void dropTable(ArrayList<String> commandTokens) {
         System.out.println("Command: " + tokensToCommandString(commandTokens));
         System.out.println("Stub: This is the dropTable method.");
@@ -239,17 +220,12 @@ public class Commands {
             System.out.println(Settings.getDataBaseNotSelected());
             return;
         }
-        Table table = new Table(Settings.getDataBaseName(), commandTokens.get(2));
-        if (table.exists()) {
-            if (table.delete()) {
-                System.out.println(Settings.getquerySucessfulString());
-                return;
-            } else {
-                System.out.println(Settings.getqueryUnSucessfulString());
-                return;
-            }
+
+        if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
+            // TODO: ADD CODE TO DELETE TABLE
+        } else {
+            System.out.println(Settings.getdataBaseTableNotFound());
         }
-        System.out.println(Settings.getdataBaseTableNotFound());
         return;
     }
 
@@ -309,31 +285,21 @@ public class Commands {
                 return;
             }
         }
-        // else if((commandTokens.contains("where"))
     }
 
-    /**
-     * Stub method for updating records
-     * 
-     * @param updateString is a String of the user input
-     */
     public static void parseUpdate(String command) {
-        String[] values = { "col1", "1000" };
-        String[] where = { "col1", "10" };
-        db.updateInfo("details", values, where);
-        // ArrayList<String> commandTokens = commandStringToTokenList(command);
-        // if (!commandTokens.contains("set") || !commandTokens.contains("where")) {
-        // System.out.println(Settings.getSyntaxError());
-        // } else {
-        // if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(1)))
-        // {
-        // Map<String, String[]> updateValues = CommonUse.updateQueryPrep(command);
-        // db.updateInfo(commandTokens.get(1), updateValues.get("values"),
-        // updateValues.get("where"));
-        // } else {
-        // System.out.println(Settings.getdataBaseTableNotFound());
-        // }
-        // }
+        ArrayList<String> commandTokens = commandStringToTokenList(command);
+        if (!commandTokens.contains("set") || !commandTokens.contains("where")) {
+            System.out.println(Settings.getSyntaxError());
+        } else {
+            if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(1))) {
+                Map<String, String[]> updateValues = CommonUse.updateQueryPrep(command);
+                db.updateInfo(commandTokens.get(1), updateValues.get("values"),
+                        updateValues.get("where"));
+            } else {
+                System.out.println(Settings.getdataBaseTableNotFound());
+            }
+        }
     }
 
     public static String tokensToCommandString(ArrayList<String> commandTokens) {
@@ -353,9 +319,6 @@ public class Commands {
         return tokenizedCommand;
     }
 
-    /**
-     * Help: Display supported commands
-     */
     public static void help() {
         out.println(WelcomeScreen.printSeparator("*", 80));
         out.println("SUPPORTED COMMANDS\n");

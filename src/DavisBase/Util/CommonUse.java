@@ -2,7 +2,6 @@ package DavisBase.Util;
 
 import java.io.File;
 import java.io.RandomAccessFile;
-import java.lang.annotation.Retention;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -157,16 +156,35 @@ public class CommonUse {
         command = CommonUse.removeBegning(command, 3);
         String whereCondition = CommonUse.splitGenerator(command, "where")[1];
         String[] whereConditionssArray = CommonUse.splitGenerator(whereCondition, ",");
-        String[] whereColumns = new String[whereConditionssArray.length * 2];
+        String[] whereColumns = new String[whereConditionssArray.length * 3];
         int i = 0;
         for (String string : whereConditionssArray) {
-            String[] temp = string.split("=");
+            String[] temp = string.split(" ");
             for (String string2 : temp) {
                 whereColumns[i] = string2.strip();
                 i++;
             }
         }
         return whereColumns;
+    }
+
+    public static String getOperatorFromQuery(String command) {
+        if (command.contains("="))
+            return "=";
+        else if (command.contains("="))
+            return "=";
+        else if (command.contains("!="))
+            return "!=";
+        else if (command.contains("<="))
+            return "<=";
+        else if (command.contains(">="))
+            return ">=";
+        else if (command.contains("<"))
+            return "<";
+        else if (command.contains(">"))
+            return ">";
+        else
+            return "=";
     }
 
     public static String[] selectWhereCols(String command) {

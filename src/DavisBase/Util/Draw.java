@@ -22,6 +22,8 @@ public class Draw {
                 format[j] = 40;
             } else if (column[j].getType() > 7) {
                 format[j] = 20;
+            } else if (column[j].getType() > 5) {
+                format[j] = 10;
             } else {
                 format[j] = column[j].getName().length() + 1;
             }

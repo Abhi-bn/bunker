@@ -12,4 +12,8 @@ public class DavisBaseExceptions {
     public static class DuplicateValueException extends Exception {
 
     }
+
+    public static class UnsupportedOperationException extends Exception {
+
+    }
 }
