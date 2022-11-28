@@ -145,9 +145,10 @@ public class MetaData extends Table {
 
     public void insert(String table_name, String... columns) {
         ValueField[][] values = colToValues(table_name, generateMeta(columns),
-                (int) tables_IDs.get(name.toUpperCase()) + 1);
+                total_rows);
         insert(values);
-        updateID(name, (int) tables_IDs.get(name.toUpperCase()) + values.length);
+        fetch_meta_data();
+        updateID(name, total_rows);
     }
 
     public void updateID(String table_name, int ID) {
@@ -216,7 +217,7 @@ public class MetaData extends Table {
             tables_info.put(values.getKey(), table_d);
         }
 
-        total_rows = _tables_info.size();
+        total_rows = table_data.size();
     }
 
     public void fetch_meta_data() {

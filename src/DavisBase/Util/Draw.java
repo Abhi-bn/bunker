@@ -1,8 +1,12 @@
 package DavisBase.Util;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 
 import DavisBase.TypeSupports.ColumnField;
+import DavisBase.TypeSupports.SupportedTypesConst;
 import DavisBase.TypeSupports.ValueField;
 
 public class Draw {
@@ -13,6 +17,10 @@ public class Draw {
 
         for (int j = 0; j < column.length; j++) {
             if (column[j].getBytes() == 0) {
+                format[j] = 20;
+            } else if (column[j].getType() == 9) {
+                format[j] = 40;
+            } else if (column[j].getType() > 7) {
                 format[j] = 20;
             } else {
                 format[j] = column[j].getName().length() + 1;
@@ -89,7 +97,12 @@ public class Draw {
                 System.out.print('│');
             String center = "";
             if (value) {
-                center = center(vf[j].getValue(), format[j]);
+                if (vf[j].getType() == SupportedTypesConst.DATE) {
+                    LocalDate date = LocalDate.ofInstant(((Date) vf[j].getValue()).toInstant(), ZoneId.systemDefault());
+                    center = center(date, format[j]);
+                } else {
+                    center = center(vf[j].getValue(), format[j]);
+                }
             } else {
                 center = center(vf[j].getName(), format[j]);
             }

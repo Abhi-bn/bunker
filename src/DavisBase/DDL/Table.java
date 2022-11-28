@@ -87,16 +87,22 @@ public class Table {
         }
     }
 
-    public void select(String table_name, String[] cols) {
+    public void select(String table_name, String[] data, String[] cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
         ValueField[] to_show = new ValueField[cols.length];
         for (int i = 0; i < cols.length; i += 1) {
-            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, cols[i].toUpperCase());
+            ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
             to_show[i] = field;
         }
-        ValueField[] filter = new ValueField[0];
+        ValueField[] filter = new ValueField[data.length / 2];
         if (cols.length == 0) {
             to_show = table_info;
+        }
+
+        for (int i = 0; i < filter.length; i += 2) {
+            ValueField field = MetaData.getMeColumnFromName(table_info, data[i].toUpperCase());
+            field.setValue(data[i + 1]);
+            filter[i / 2] = field;
         }
         select(table_name, filter, to_show, table_info);
     }
@@ -124,7 +130,7 @@ public class Table {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
         ValueField[] to_delete = new ValueField[cols.length / 2];
         for (int i = 0; i < cols.length; i += 2) {
-            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, cols[i].toUpperCase());
+            ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
             field.setValue(cols[i + 1]);
             to_delete[i] = field;
         }
@@ -150,15 +156,15 @@ public class Table {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
         ValueField[] to_update = new ValueField[cols.length / 2];
         for (int i = 0; i < cols.length; i += 2) {
-            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, cols[i].toUpperCase());
+            ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
             field.setValue(cols[i + 1]);
-            to_update[i] = field;
+            to_update[i / 2] = field;
         }
         ValueField[] to_update_value = new ValueField[data.length / 2];
         for (int i = 0; i < data.length; i += 2) {
-            ValueField field = DBEngine.__metadata.getMeColumnFromName(table_info, data[i].toUpperCase());
+            ValueField field = MetaData.getMeColumnFromName(table_info, data[i].toUpperCase());
             field.setValue(data[i + 1]);
-            to_update_value[i] = field;
+            to_update_value[i / 2] = field;
         }
         return updateInfo(to_update_value, to_update, table_info);
     }

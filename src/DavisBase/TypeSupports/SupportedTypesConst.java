@@ -24,7 +24,6 @@ public class SupportedTypesConst {
     public static final Integer TEXT = 11;
 
     static List<Integer> nums = Arrays.asList(TINYINT, SMALLINT, INT, BIGINT, FLOAT, DOUBLE, YEAR, TIME);
-    static List<Integer> strs = Arrays.asList(DATETIME, TEXT, DATE);
 
     public static final String sNULL = "NULL";
     public static final String sTINYINT = "TINYINT";
@@ -86,9 +85,6 @@ public class SupportedTypesConst {
     }
 
     public static boolean validateType(int type, String value) {
-        // if (nums.contains(type)) {
-
-        // }
         return true;
     }
 
