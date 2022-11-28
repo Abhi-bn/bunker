@@ -12,10 +12,9 @@ import DavisBase.Pages.PageGenerator;
 import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.DavisBaseExceptions;
-import DavisBase.Util.Draw;
-import DavisBase.Util.Log;
 import DavisBase.Util.DavisBaseExceptions.DuplicateValueException;
 import DavisBase.Util.DavisBaseExceptions.NullInsertException;
+import DavisBase.Util.Draw;
 
 public class Table {
     static boolean verbose = true;

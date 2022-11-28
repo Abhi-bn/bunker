@@ -2,7 +2,6 @@ package DavisBase;
 
 import java.io.File;
 
-import DavisBase.DDL.Index;
 import DavisBase.DDL.MetaData;
 import DavisBase.DDL.Table;
 
