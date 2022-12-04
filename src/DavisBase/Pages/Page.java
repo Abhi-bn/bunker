@@ -11,18 +11,19 @@ import DavisBase.Util.CommonUse;
 import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.DavisBaseExceptions.PageOverflow;
 
-public abstract class Page {
+public class Page {
     public enum PageType {
         IndexInterior,
         TableInterior,
         IndexLeaf,
-        TableLeaf
+        TableLeaf,
+        NotKnownYet
     };
 
     final static short BYTE_LEN = 8;
     final static short COL_META = 2;
     final static short HEADER_SIZE = 16;
-    final int PAGESIZE = 512;
+    public final static int PAGESIZE = 512;
     final boolean verbose = true;
 
     final static int[] supported_offset = {
@@ -45,6 +46,22 @@ public abstract class Page {
     /* Data infos */
     int col_size;
     byte[][] all_data;
+
+    public PageType getPageType() {
+        switch (offset0) {
+            case 2:
+                return PageType.IndexInterior;
+            case 5:
+                return PageType.TableInterior;
+            case 10:
+                return PageType.IndexLeaf;
+            case 13:
+                return PageType.TableLeaf;
+            default:
+                System.exit(0);
+        }
+        return PageType.NotKnownYet;
+    }
 
     public void set_initial_state() {
         offset2 = 0;

@@ -18,6 +18,8 @@ public final class PageGenerator {
                 return new IndexLeafPage(page, create_new);
             case TableLeaf:
                 return new TableLeafPage(page, create_new);
+            case NotKnownYet:
+                return new Page(page, create_new);
         }
         return new TableLeafPage(page, create_new);
     }

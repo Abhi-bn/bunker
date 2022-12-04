@@ -10,40 +10,45 @@ import DavisBase.TypeSupports.SupportedTypesConst;
 import DavisBase.TypeSupports.ValueField;
 
 public class Draw {
+
+    private static int format_length(ColumnField[] column, ArrayList<ValueField[]> values, int[] special,
+            int[] format) {
+        for (int j = 0; j < values.size(); j++) {
+            if (j == 0) {
+                for (int i = 0; i < column.length; i++) {
+                    int l = String.format("%s │ ", column[i].getName()).length();
+                    format[i] = Math.max(format[i], l);
+                    int k = String.format("%" + l + "s │ ", column[j].getName()).length();
+                    special[i] = Math.max(special[i], k);
+                }
+            }
+            for (int i = 0; i < values.get(j).length; i++) {
+                int l = String.format("%s │ ", values.get(j)[i].getValue()).length();
+                format[i] = Math.max(format[i], l);
+                int k = String.format("%" + l + "s │ ", values.get(j)[i].getValue()).length();
+                special[i] = Math.max(special[i], k);
+            }
+        }
+        int total_length = 0;
+        for (int i = 0; i < format.length; i++) {
+            total_length += special[i];
+            special[i] = total_length - 1;
+        }
+        return total_length;
+    }
+
     public static void drawTable(ColumnField[] column, ArrayList<ValueField[]> values) {
         int[] format = new int[column.length];
         int[] special = new int[column.length];
-        int total_length = 0;
+        int total_length = format_length(column, values, special, format);
 
-        for (int j = 0; j < column.length; j++) {
-            if (column[j].getBytes() == 0) {
-                format[j] = 20;
-            } else if (column[j].getType() == 9) {
-                format[j] = 40;
-            } else if (column[j].getType() > 7) {
-                format[j] = 20;
-            } else if (column[j].getType() > 5) {
-                format[j] = 10;
-            } else {
-                format[j] = column[j].getName().length() + 1;
-            }
-            int l = String.format("%" + String.valueOf(
-                    format[j]) + "s │ ",
-                    column[j].getName()).length();
-            total_length += l;
-            special[j] = total_length - 1;
-        }
         // Draw Header
         draw_line(special, total_length, 0);
         draw_each_column(format, column);
-        System.out.println();
         draw_line(special, total_length, 1);
-
         // Draw the Data
-        for (int i = 0; i < values.size(); i++) {
+        for (int i = 0; i < values.size(); i++)
             draw_each_field(format, values.get(i), true);
-            System.out.println();
-        }
         draw_line(special, total_length, 2);
     }
 
@@ -91,6 +96,7 @@ public class Draw {
             System.out.format("%" + String.valueOf(
                     format[j]) + "s │ ", center);
         }
+        System.out.println();
     }
 
     private static void draw_each_field(int[] format, ValueField[] vf, boolean value) {
@@ -112,6 +118,7 @@ public class Draw {
             System.out.format("%" + String.valueOf(
                     format[j]) + "s │ ", center);
         }
+        System.out.println();
     }
 
     private static String center(Object text, int len) {

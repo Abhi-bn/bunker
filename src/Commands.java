@@ -92,7 +92,9 @@ public class Commands {
                 Settings.setExit(true);
                 break;
             default:
-                System.out.println("I didn't understand the command: \"" + userCommand + "\"");
+                System.out.println(
+                        Settings.ANSI_RED_BACKGROUND + "I didn't understand the command: \"" + userCommand + "\""
+                                + Settings.ANSI_RESET);
                 break;
         }
     }
@@ -108,11 +110,21 @@ public class Commands {
         }
         Settings.setDataBaseSelected(true);
         Settings.setDataBaseName(commandTokens.get(1));
-        db.connect(commandTokens.get(1));
+        if (!db.connect(commandTokens.get(1)))
+            System.out.println("Error Connecting to Database");
     }
 
     private static void describe(ArrayList<String> commandTokens) {
-        db.describe();
+        if (commandTokens.size() == 1) {
+            db.describe("");
+            return;
+        }
+        if (commandTokens.size() == 3) {
+            db.describe(commandTokens.get(2));
+            return;
+        }
+
+        System.out.println(Settings.getdataBaseTableNotFound());
     }
 
     public static void displayVersion() {
@@ -213,16 +225,15 @@ public class Commands {
         System.out.println("Stub: This is the dropTable method.");
         if (commandTokens.size() != 3) {
             System.out.println(Settings.getSyntaxError());
-
             return;
         }
         if (!Settings.getDataBaseSelected()) {
             System.out.println(Settings.getDataBaseNotSelected());
             return;
         }
-
-        if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
-            // TODO: ADD CODE TO DELETE TABLE
+        String table_name = commandTokens.get(2);
+        if (db.checkIfTableExists(Settings.getDataBaseName(), table_name)) {
+            db.dropTable(table_name);
         } else {
             System.out.println(Settings.getdataBaseTableNotFound());
         }

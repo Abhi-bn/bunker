@@ -10,6 +10,7 @@ import DavisBase.Pages.Page;
 import DavisBase.Pages.PageController;
 import DavisBase.Pages.PageGenerator;
 import DavisBase.TypeSupports.ColumnField;
+import DavisBase.TypeSupports.SupportedTypesConst;
 import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.DavisBaseExceptions.DuplicateValueException;
@@ -34,7 +35,7 @@ public class Table {
             f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             DBEngine.__metadata.insert(name, columns);
-            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
+            PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
             rf.close();
         } catch (DavisBaseExceptions.PageOverflow e) {
 
@@ -109,7 +110,6 @@ public class Table {
     }
 
     public void select(String table_name, ValueField[] to_show, ValueField[] table_info, ColumnField[] column) {
-
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
@@ -123,8 +123,16 @@ public class Table {
     }
 
     public void describe() {
-        MetaData tb = new MetaData(path);
-        tb.selectRows();
+        ColumnField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
+        ArrayList<ValueField[]> values = new ArrayList<>();
+        ValueField[] vf = new ValueField[table_info.length];
+        String[] c = { "Tables", "Text" };
+        for (int i = 0; i < table_info.length; i++) {
+            ColumnField cf = table_info[i];
+            vf[i] = new ValueField(SupportedTypesConst.TypesToString.get(cf.getType()), c, i);
+        }
+        values.add(vf);
+        Draw.drawTable(table_info, values);
     }
 
     public int deleteTableValues(String... cols) {
@@ -269,7 +277,7 @@ public class Table {
             for (ValueField newVf : newData) {
                 if (!newVf.getUnique())
                     continue;
-                ValueField valueField = DBEngine.__metadata.getMeColumnFromName(existingVal, newVf.getName());
+                ValueField valueField = MetaData.getMeColumnFromName(existingVal, newVf.getName());
                 if (valueField.compare(newVf)) {
                     throw new DavisBaseExceptions.DuplicateValueException();
                 }
@@ -296,6 +304,7 @@ public class Table {
     }
 
     public boolean delete() {
+        DBEngine.__metadata.deleteTableValues(this.name);
         File tableFile = new File(this.getFilePath());
         return tableFile.delete();
     }

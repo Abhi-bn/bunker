@@ -114,7 +114,7 @@ public class MetaData extends Table {
         try {
             f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            Page pg = PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
+            PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
             insert(fields);
             rf.close();
         } catch (DavisBaseExceptions.PageOverflow e) {
@@ -242,5 +242,20 @@ public class MetaData extends Table {
             rf.close();
         } catch (IOException e) {
         }
+    }
+
+    @Override
+    public int deleteTableValues(String... cols) {
+        ValueField[] columns = tables_info.get(this.name);
+        ValueField field = getMeColumnFromName(columns, "TABLE");
+        field.setValue(cols[0]);
+        ValueField[] fields = { field };
+        return deleteTableValues(fields, columns) > 0 ? 1 : 0;
+
+    }
+
+    @Override
+    public void describe() {
+        selectRows();
     }
 }

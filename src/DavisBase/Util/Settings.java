@@ -1,22 +1,34 @@
 package DavisBase.Util;
 
 public class Settings {
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
+    public static final String ANSI_RED_BACKGROUND = "\u001B[41m";
+    public static final String ANSI_GREEN_BACKGROUND = "\u001B[42m";
+    public static final String ANSI_YELLOW_BACKGROUND = "\u001B[43m";
+    public static final String ANSI_BLUE_BACKGROUND = "\u001B[44m";
+    public static final String ANSI_PURPLE_BACKGROUND = "\u001B[45m";
+    public static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
+    public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
+    public static final String ANSI_RESET = "\u001B[0m";
 
-    static String prompt = "davisql> ";
+    public static final String ARROW = " \u276F" + ANSI_RESET + " ";
+    static String prompt = ANSI_PURPLE_BACKGROUND + "bunker" + ARROW;
     static String version = "v1.2";
-    static String copyright = "Â©2020 Chris Irwin Davis";
+    static String copyright = "©2022 Bunker Team";
     static boolean isExit = false;
     static String dataBaseName = "";
     static boolean dataBaseSelected = false;
-    static String sytaxErrorString = "Oops! There is a syntax error in your query/command";
-    static String createDatabaseSuccess = "Data Base created sucessfully";
-    static String createDatabaseFailure = "Data Base already exists/ data base cannot be created";
-    static String droppedSucessfully = "Database dropped";
-    static String droppedUnSucessfully = "Error when dropping database";
-    static String databaseNotSelected = "Database not selected, for this operation";
-    static String dataBaseTableNotFound = "Database/table not found";
-    static String querySucessfulString = "Query ran sucessfully";
-    static String queryUnSucessfulString = "Query un-sucessfull";
+    static String sytaxErrorString = ANSI_RED_BACKGROUND + "Oops! There is a syntax error in your query/command";
+    static String createDatabaseSuccess = ANSI_GREEN_BACKGROUND + "Data Base created sucessfully" + ANSI_RESET;
+    static String createDatabaseFailure = ANSI_YELLOW_BACKGROUND
+            + "Data Base already exists/ data base cannot be created" + ANSI_RESET;
+    static String droppedSucessfully = ANSI_GREEN_BACKGROUND + "Database dropped" + ANSI_RESET;
+    static String droppedUnSucessfully = ANSI_RED_BACKGROUND + "Error when dropping database" + ANSI_RESET;
+    static String databaseNotSelected = ANSI_RED_BACKGROUND + "Database not selected, for this operation" + ANSI_RESET;
+    static String dataBaseTableNotFound = ANSI_RED_BACKGROUND + "Database/table not found" + ANSI_RESET;
+    static String querySucessfulString = ANSI_GREEN_BACKGROUND + "Query ran sucessfully" + ANSI_RESET;
+    static String queryUnSucessfulString = ANSI_RED_BACKGROUND + "Query un-sucessfull" + ANSI_RESET;
     /*
      * Page size for all files is 512 bytes by default.
      * You may choose to make it user modifiable
@@ -68,7 +80,7 @@ public class Settings {
     }
 
     public static String getDataBaseName() {
-        return dataBaseName;
+        return ANSI_CYAN_BACKGROUND + dataBaseName;
     }
 
     public static void setDataBaseSelected(Boolean dataBaseSelected) {
