@@ -92,7 +92,7 @@ public class Table {
     public void select(String table_name, String[] where, String[] cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
 
-        if (!validateSelectFields(table_info, where, 1)) {
+        if (!validateSelectFields(table_info, where, 3)) {
             System.out.println(Settings.columnNameError);
             return;
         }
@@ -147,22 +147,24 @@ public class Table {
         Draw.drawTable(table_info, values);
     }
 
-    public int deleteTableValues(String... cols) {
+    public int deleteTableValues(String[] cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
 
-        if (!validateSelectFields(table_info, cols, 1)) {
+        if (!validateSelectFields(table_info, cols, 3)) {
             System.out.println(Settings.columnNameError);
             return 0;
         }
 
-        ValueField[] to_delete = new ValueField[cols.length / 2];
-        for (int i = 0; i < cols.length; i += 2) {
+        ValueField[] to_delete = new ValueField[cols.length / 3];
+        for (int i = 0; i < cols.length; i += 3) {
             ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
-            field.setValue(cols[i + 1]);
+            field.setValue(cols[i + 2]);
+            field.setOp(cols[i + 1]);
             to_delete[i] = field;
         }
         int rows_deleted = deleteTableValues(to_delete, table_info);
-        DBEngine.__metadata.updateID(name, DBEngine.__metadata.tables_IDs.get(name) - rows_deleted);
+        // DBEngine.__metadata.updateID(name, DBEngine.__metadata.tables_IDs.get(name) -
+        // rows_deleted);
         return rows_deleted;
     }
 
