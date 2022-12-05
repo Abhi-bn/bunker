@@ -5,20 +5,21 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
+import DavisBase.DDL.MetaData;
 import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.DavisBaseExceptions;
 
-public class PageController {
+public class BPlusTreeController {
     RandomAccessFile access_file;
     boolean create_new = false;
 
-    public PageController(RandomAccessFile access_file, boolean create_new) {
+    public BPlusTreeController(RandomAccessFile access_file, boolean create_new) {
         this.access_file = access_file;
         this.create_new = create_new;
     }
 
-    public ArrayList<ValueField[]> get_me_data(ColumnField[] column) {
+    public ArrayList<ValueField[]> select_all_data(ColumnField[] column) {
         ArrayList<ValueField[]> arr = new ArrayList<>();
         long pos = 0;
         try {
@@ -43,21 +44,13 @@ public class PageController {
         return arr;
     }
 
-    private ValueField get_column_name(ValueField v, ValueField[] columns) {
-        for (int i = 0; i < columns.length; i++) {
-            if (v.getName().equals(columns[i].getName()))
-                return columns[i];
-        }
-        return null;
-    }
-
     public ArrayList<ValueField[]> select_data(ValueField[] data, ValueField[] req_col, ColumnField[] column) {
-        ArrayList<ValueField[]> arr = get_me_data(column);
+        ArrayList<ValueField[]> arr = select_all_data(column);
         ArrayList<Integer> _to_data = new ArrayList<>();
         for (int i = 0; i < arr.size(); i++) {
             int match = 0;
             for (int j = 0; j < data.length; j++) {
-                ValueField val = get_column_name(data[j], arr.get(i));
+                ValueField val = MetaData.getMeColumnFromName(arr.get(i), data[j].getName());
                 if (val.compare(data[j]))
                     match += 1;
             }
@@ -74,7 +67,7 @@ public class PageController {
         for (int i = 0; i < filtered_data.size(); i++) {
             ValueField[] fil = new ValueField[req_col.length];
             for (int j = 0; j < req_col.length; j++) {
-                ValueField val = get_column_name(req_col[j], filtered_data.get(i));
+                ValueField val = MetaData.getMeColumnFromName(filtered_data.get(i), req_col[j].getName());
                 fil[j] = new ValueField(val.getValue(), req_col[j]);
             }
             filter.add(fil);
@@ -86,17 +79,15 @@ public class PageController {
     public void insert_data(ValueField[][] data) {
         int pos = 0;
         int rows_inserted = 0;
-        boolean extend = false;
         while (true) {
             if (rows_inserted == data.length)
                 break;
             try {
                 Page pg = null;
 
-                extend = pos >= access_file.length();
+                Boolean extend = pos >= access_file.length();
 
                 if (extend) {
-                    extend = false;
                     // extend the file first
                     long old = access_file.length();
                     access_file.setLength(access_file.length() + 512);
@@ -112,11 +103,8 @@ public class PageController {
                     rows_inserted += pg.insertData(data[i]) ? 1 : 0;
                 }
             } catch (DavisBaseExceptions.PageOverflow e) {
-                extend = true;
             } catch (EOFException e) {
-                extend = true;
             } catch (IOException e) {
-                extend = true;
             }
         }
     }
@@ -154,12 +142,13 @@ public class PageController {
                 to_be_updated.get(i)[data[j].getOrder()].setValue(data[j].getValue());
             }
         }
-        ValueField[][] vals = new ValueField[to_be_updated.size()][columns.length];
-        for (int i = 0; i < vals.length; i++) {
-            for (int j = 0; j < vals[i].length; j++) {
-                vals[i][j] = to_be_updated.get(i)[j];
+        ValueField[][] values = new ValueField[to_be_updated.size()][columns.length];
+        for (int i = 0; i < values.length; i++) {
+            for (int j = 0; j < values[i].length; j++) {
+                values[i][j] = to_be_updated.get(i)[j];
             }
         }
+        // Resetting the seeker
         try {
             access_file.seek(0);
         } catch (IOException e) {
@@ -171,22 +160,20 @@ public class PageController {
         } catch (IOException e) {
 
         }
-        insert_data(vals);
+        insert_data(values);
     }
 
     public void insert_data_index(ValueField[][] data) {
         System.out.println(access_file);
         int pos = 0;
         int rows_inserted = 0;
-        boolean extend = false;
         while (true) {
             if (rows_inserted == data.length)
                 break;
             try {
                 Page pg = null;
                 System.out.println(access_file.length());
-                extend = pos >= access_file.length();
-
+                boolean extend = pos >= access_file.length();
                 if (extend) {
                     extend = false;
                     // extend the file first
@@ -204,11 +191,8 @@ public class PageController {
                     rows_inserted += pg.insertDataIndex(data[i]) ? 1 : 0;
                 }
             } catch (DavisBaseExceptions.PageOverflow e) {
-                extend = true;
             } catch (EOFException e) {
-                extend = true;
             } catch (IOException e) {
-                extend = true;
             }
         }
     }

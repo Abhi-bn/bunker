@@ -13,7 +13,7 @@ import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.Draw;
 import DavisBase.Pages.Page;
-import DavisBase.Pages.PageController;
+import DavisBase.Pages.BPlusTreeController;
 import DavisBase.Pages.PageGenerator;
 import DavisBase.TypeSupports.ColumnField;
 
@@ -224,8 +224,8 @@ public class MetaData extends Table {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "r");
-            PageController pc = new PageController(rf, false);
-            update_all_tables_info(pc.get_me_data(AllFields));
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
+            update_all_tables_info(pc.select_all_data(AllFields));
             rf.close();
         } catch (IOException e) {
         }
@@ -235,8 +235,8 @@ public class MetaData extends Table {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "r");
-            PageController pc = new PageController(rf, false);
-            ArrayList<ValueField[]> data = pc.get_me_data(AllFields);
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
+            ArrayList<ValueField[]> data = pc.select_all_data(AllFields);
             update_all_tables_info(data);
             Draw.drawTable(AllFields, data);
             rf.close();

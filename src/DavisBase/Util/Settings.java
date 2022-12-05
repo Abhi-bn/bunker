@@ -14,12 +14,13 @@ public class Settings {
 
     public static final String ARROW = " \u276F" + ANSI_RESET + " ";
     static String prompt = ANSI_PURPLE_BACKGROUND + "bunker" + ARROW;
-    static String version = "v1.2";
+    static String version = "v1.7";
     static String copyright = "©2022 Bunker Team";
     static boolean isExit = false;
     static String dataBaseName = "";
     static boolean dataBaseSelected = false;
-    static String sytaxErrorString = ANSI_RED_BACKGROUND + "Oops! There is a syntax error in your query/command";
+    static String sytaxErrorString = ANSI_RED_BACKGROUND + "Oops! There is a syntax error in your query/command"
+            + ANSI_RESET;
     static String createDatabaseSuccess = ANSI_GREEN_BACKGROUND + "Data Base created sucessfully" + ANSI_RESET;
     static String createDatabaseFailure = ANSI_YELLOW_BACKGROUND
             + "Data Base already exists/ data base cannot be created" + ANSI_RESET;
@@ -29,6 +30,8 @@ public class Settings {
     static String dataBaseTableNotFound = ANSI_RED_BACKGROUND + "Database/table not found" + ANSI_RESET;
     static String querySucessfulString = ANSI_GREEN_BACKGROUND + "Query ran sucessfully" + ANSI_RESET;
     static String queryUnSucessfulString = ANSI_RED_BACKGROUND + "Query un-sucessfull" + ANSI_RESET;
+    public static String columnNameError = ANSI_RED_BACKGROUND + "Table column names does not match"
+            + ANSI_RESET;
     /*
      * Page size for all files is 512 bytes by default.
      * You may choose to make it user modifiable

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import DavisBase.DBEngine;
-import DavisBase.DDL.Table;
 import DavisBase.Util.CommonUse;
 import DavisBase.Util.Settings;
 import DavisBase.Util.WelcomeScreen;
@@ -133,18 +132,17 @@ public class Commands {
     }
 
     public static void parseCreateDatabase(String command) {
-
         System.out.println("Stub: parseCreateDatabase method");
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (commandTokens.size() != 3) {
             System.out.println(Settings.getSyntaxError());
-        } else {
-            if (db.createDB(commandTokens.get(2))) {
-                System.out.println(Settings.getCreateDatabaseSuccess());
-            } else {
-                System.out.println(Settings.getCreateDatabaseAlreadyExists());
-            }
+            return;
         }
+        if (!db.createDB(commandTokens.get(2))) {
+            System.out.println(Settings.getCreateDatabaseAlreadyExists());
+            return;
+        }
+        System.out.println(Settings.getCreateDatabaseSuccess());
     }
 
     public static void parseCreateTable(String command) {
@@ -157,32 +155,30 @@ public class Commands {
         if (!Settings.getDataBaseSelected()) {
             System.out.println(Settings.getDataBaseNotSelected());
             return;
-        } else {
-            Table table = new Table(Settings.getDataBaseName(), commandTokens.get(2));
-            if (table.exists()) {
-                System.out.println(Settings.getCreateDatabaseAlreadyExists());
-                return;
-            }
-            String[] columnString = CommonUse.createQueryString(command, 3);
-            db.createTable(commandTokens.get(2), columnString);
         }
+        if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
+            System.out.println(Settings.getCreateDatabaseAlreadyExists());
+            return;
+        }
+        String[] columnString = CommonUse.createQueryString(command, 3);
+        db.createTable(commandTokens.get(2), columnString);
+        System.out.println(Settings.getCreateDatabaseSuccess());
     }
 
     public static void show(ArrayList<String> commandTokens) {
         if (commandTokens.size() != 2) {
             System.out.println(Settings.getSyntaxError());
             return;
-        } else {
-            if (commandTokens.get(1).equalsIgnoreCase("tables")) {
-                if (Settings.getDataBaseSelected())
-                    db.showTables(Settings.getDataBaseName());
-                else {
-                    System.out.println(Settings.getDataBaseNotSelected());
-                }
-            } else if (commandTokens.get(1).equalsIgnoreCase("databases")) {
-                db.showDatabases();
-            }
         }
+        if (commandTokens.get(1).equalsIgnoreCase("databases")) {
+            db.showDatabases();
+            return;
+        }
+        if (!Settings.getDataBaseSelected()) {
+            System.out.println(Settings.getDataBaseNotSelected());
+            return;
+        }
+        db.showTables(Settings.getDataBaseName());
     }
 
     public static void parseInsert(String command) {
@@ -209,15 +205,14 @@ public class Commands {
     public static void dropDatabase(ArrayList<String> commandTokens) {
         if (commandTokens.size() != 3) {
             System.out.println(Settings.getSyntaxError());
-        } else {
-            if (db.dropDataBase(commandTokens.get(2))) {
-                System.out.println(Settings.getDroppedSucessfully());
-                Settings.setDataBaseName(null);
-                Settings.setDataBaseSelected(false);
-            } else {
-                System.out.println(Settings.getDroppedUnSucessfully());
-            }
+            return;
         }
+        if (!db.dropDataBase(commandTokens.get(2))) {
+            System.out.println(Settings.getDroppedUnSucessfully());
+        }
+        Settings.setDataBaseName(null);
+        Settings.setDataBaseSelected(false);
+        System.out.println(Settings.getDroppedSucessfully());
     }
 
     public static void dropTable(ArrayList<String> commandTokens) {
@@ -302,15 +297,14 @@ public class Commands {
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (!commandTokens.contains("set") || !commandTokens.contains("where")) {
             System.out.println(Settings.getSyntaxError());
-        } else {
-            if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(1))) {
-                Map<String, String[]> updateValues = CommonUse.updateQueryPrep(command);
-                db.updateInfo(commandTokens.get(1), updateValues.get("values"),
-                        updateValues.get("where"));
-            } else {
-                System.out.println(Settings.getdataBaseTableNotFound());
-            }
+            return;
         }
+        if (!db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(1))) {
+            System.out.println(Settings.getdataBaseTableNotFound());
+            return;
+        }
+        Map<String, String[]> updateValues = CommonUse.updateQueryPrep(command);
+        db.updateInfo(commandTokens.get(1), updateValues.get("values"), updateValues.get("where"));
     }
 
     public static String tokensToCommandString(ArrayList<String> commandTokens) {

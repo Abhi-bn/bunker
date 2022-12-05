@@ -13,15 +13,13 @@ public class Draw {
 
     private static int format_length(ColumnField[] column, ArrayList<ValueField[]> values, int[] special,
             int[] format) {
+        for (int i = 0; i < column.length; i++) {
+            int l = String.format("%s │ ", column[i].getName()).length();
+            format[i] = Math.max(format[i], l);
+            int k = String.format("%" + l + "s │ ", column[i].getName()).length();
+            special[i] = Math.max(special[i], k);
+        }
         for (int j = 0; j < values.size(); j++) {
-            if (j == 0) {
-                for (int i = 0; i < column.length; i++) {
-                    int l = String.format("%s │ ", column[i].getName()).length();
-                    format[i] = Math.max(format[i], l);
-                    int k = String.format("%" + l + "s │ ", column[j].getName()).length();
-                    special[i] = Math.max(special[i], k);
-                }
-            }
             for (int i = 0; i < values.get(j).length; i++) {
                 int l = String.format("%s │ ", values.get(j)[i].getValue()).length();
                 format[i] = Math.max(format[i], l);

@@ -12,7 +12,7 @@ import DavisBase.Util.Settings;
 
 public class DBEngine {
     private static String DBPath;
-    private static String BasePath = "davis_base/";
+    private static String BasePath = "team_bunker/";
     public static MetaData __metadata;
 
     public DBEngine() {
@@ -24,8 +24,8 @@ public class DBEngine {
         return BasePath + DBPath + "/";
     }
 
-    public String makeTablePath(String table_name) {
-        return getDBPath() + "/" + table_name;
+    public String makeFromBasePath(String db_name) {
+        return BasePath + db_name;
     }
 
     public boolean createDB(String database) {
@@ -117,13 +117,12 @@ public class DBEngine {
     }
 
     public boolean dropDataBase(String databaseName) {
-        File DBFile = new File(databaseName);
-        if (checkIfPathExists(DBFile)) {
-            return deleteDirectory(DBFile);
-        } else {
+        File DBFile = new File(makeFromBasePath(databaseName));
+        if (!checkIfPathExists(DBFile)) {
             System.out.println("DataBase does not exist");
             return false;
         }
+        return deleteDirectory(DBFile);
     }
 
     public boolean showTables(String databaseName) {
@@ -161,7 +160,7 @@ public class DBEngine {
     }
 
     public boolean checkIfDbExists(String databaseName) {
-        File DBFile = new File(BasePath + databaseName);
+        File DBFile = new File(makeFromBasePath(databaseName));
         return checkIfPathExists(DBFile);
     }
 

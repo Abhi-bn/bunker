@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import DavisBase.DBEngine;
 import DavisBase.Pages.Page;
-import DavisBase.Pages.PageController;
+import DavisBase.Pages.BPlusTreeController;
 import DavisBase.Pages.PageGenerator;
 import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.SupportedTypesConst;
@@ -16,6 +16,7 @@ import DavisBase.Util.DavisBaseExceptions;
 import DavisBase.Util.DavisBaseExceptions.DuplicateValueException;
 import DavisBase.Util.DavisBaseExceptions.NullInsertException;
 import DavisBase.Util.Draw;
+import DavisBase.Util.Settings;
 
 public class Table {
     static boolean verbose = true;
@@ -32,9 +33,9 @@ public class Table {
         if (f.exists())
             return false;
         try {
-            f.createNewFile();
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             DBEngine.__metadata.insert(name, columns);
+            f.createNewFile();
             PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
             rf.close();
         } catch (DavisBaseExceptions.PageOverflow e) {
@@ -80,7 +81,7 @@ public class Table {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            PageController pc = new PageController(rf, false);
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
             pc.insert_data(fields);
             rf.close();
         } catch (Exception e) {
@@ -90,6 +91,17 @@ public class Table {
 
     public void select(String table_name, String[] where, String[] cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
+
+        if (!validateSelectFields(table_info, where, 1)) {
+            System.out.println(Settings.columnNameError);
+            return;
+        }
+
+        if (!validateSelectFields(table_info, cols, 1)) {
+            System.out.println(Settings.columnNameError);
+            return;
+        }
+
         ValueField[] to_show = new ValueField[cols.length];
         for (int i = 0; i < cols.length; i += 1) {
             ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
@@ -113,7 +125,7 @@ public class Table {
         File f = new File(getFilePath());
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            PageController pc = new PageController(rf, false);
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
             ArrayList<ValueField[]> data = pc.select_data(to_show, table_info, column);
             Draw.drawTable(table_info, data);
             rf.close();
@@ -137,6 +149,12 @@ public class Table {
 
     public int deleteTableValues(String... cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
+
+        if (!validateSelectFields(table_info, cols, 1)) {
+            System.out.println(Settings.columnNameError);
+            return 0;
+        }
+
         ValueField[] to_delete = new ValueField[cols.length / 2];
         for (int i = 0; i < cols.length; i += 2) {
             ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
@@ -153,7 +171,7 @@ public class Table {
         int rows_deleted = 0;
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            PageController pc = new PageController(rf, false);
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
             rows_deleted = pc.delete_data(fields, columns);
             rf.close();
         } catch (IOException e) {
@@ -163,6 +181,16 @@ public class Table {
 
     public int updateInfo(String[] data, String[] cols) {
         ValueField[] table_info = DBEngine.__metadata.tables_info.get(this.name);
+        if (!validateSelectFields(table_info, data, 2)) {
+            System.out.println(Settings.columnNameError);
+            return 0;
+        }
+
+        if (!validateSelectFields(table_info, cols, 2)) {
+            System.out.println(Settings.columnNameError);
+            return 0;
+        }
+
         ValueField[] where = new ValueField[cols.length / 2];
         for (int i = 0; i < cols.length; i += 2) {
             ValueField field = MetaData.getMeColumnFromName(table_info, cols[i].toUpperCase());
@@ -183,7 +211,7 @@ public class Table {
         int rows_deleted = 0;
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            PageController pc = new PageController(rf, false);
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
             pc.update_data(data, fields, columns);
             rf.close();
         } catch (IOException e) {
@@ -246,7 +274,7 @@ public class Table {
         File f = new File(getIndexFilePath("Way.row_id"));
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            PageController pc = new PageController(rf, false);
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
             pc.insert_data_index(fields);
             rf.close();
         } catch (Exception e) {
@@ -261,8 +289,8 @@ public class Table {
         ArrayList<ValueField[]> data = new ArrayList<>();
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            PageController pc = new PageController(rf, false);
-            data = pc.get_me_data(table_info);
+            BPlusTreeController pc = new BPlusTreeController(rf, false);
+            data = pc.select_all_data(table_info);
             rf.close();
         } catch (IOException e) {
             return false;
@@ -286,16 +314,16 @@ public class Table {
         return true;
     }
 
-    public boolean validateSelectFields(ValueField[] table_info, String... columns) {
+    public boolean validateSelectFields(ValueField[] table_info, String[] columns, int skip) {
         int found = 0;
         for (ValueField info : table_info) {
-            for (String columnName : columns) {
-                if (columnName.equalsIgnoreCase(info.getName())) {
+            for (int i = 0; i < columns.length; i += skip) {
+                if (columns[i].equalsIgnoreCase(info.getName())) {
                     found++;
                 }
             }
         }
-        return columns.length == found ? true : false;
+        return (columns.length / skip) == found;
     }
 
     public boolean exists() {

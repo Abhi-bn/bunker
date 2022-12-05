@@ -9,6 +9,7 @@ import DavisBase.TypeSupports.ColumnField;
 import DavisBase.TypeSupports.ValueField;
 import DavisBase.Util.CommonUse;
 import DavisBase.Util.DavisBaseExceptions;
+import DavisBase.Util.Settings;
 import DavisBase.Util.DavisBaseExceptions.PageOverflow;
 
 public class Page {
@@ -23,7 +24,6 @@ public class Page {
     final static short BYTE_LEN = 8;
     final static short COL_META = 2;
     final static short HEADER_SIZE = 16;
-    public final static int PAGESIZE = 512;
     final boolean verbose = true;
 
     final static int[] supported_offset = {
@@ -65,12 +65,12 @@ public class Page {
 
     public void set_initial_state() {
         offset2 = 0;
-        offset4 = PAGESIZE;
+        offset4 = Settings.getPageSize();
         offset6 = 0;
         offset0A = 0xFFFFFFFF;
         offset10 = new int[offset2];
         all_data = new byte[0][];
-        page_data = new byte[PAGESIZE];
+        page_data = new byte[Settings.getPageSize()];
     }
 
     private boolean safe_to_store(byte[] data, int cols) {
@@ -323,7 +323,7 @@ public class Page {
         }
         this.all_data = _all_data;
 
-        offset4 = PAGESIZE;
+        offset4 = Settings.getPageSize();
         int[] _new_offset10 = new int[offset2];
         // now update the offset positions also
         for (int j = this.all_data.length - 1; j >= 0; j--) {
@@ -336,8 +336,7 @@ public class Page {
     }
 
     public int GetPageEndSize() {
-        // TODO: based on type of page this will change
-        return 512;
+        return Settings.getPageSize();
     }
 
     // only place you want to seek as every read and write need page pointer to
@@ -350,8 +349,8 @@ public class Page {
 
     private void page_reader(boolean readOnly) throws IOException {
         long old_seek = _page.getFilePointer();
-        page_data = new byte[PAGESIZE];
-        _page.read(page_data, 0, PAGESIZE);
+        page_data = new byte[Settings.getPageSize()];
+        _page.read(page_data, 0, Settings.getPageSize());
         loadHeader(page_data, readOnly);
         _page.seek(old_seek);
     }
