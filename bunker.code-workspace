@@ -23,7 +23,15 @@
 		"tasks": []
 	},
 	"launch": {
-		"configurations": [],
+		"configurations": [
+			{
+				"type": "java",
+				"name": "Launch Main",
+				"request": "launch",
+				"mainClass": "Main",
+				"projectName": "bunker_b7da10eb"
+			}
+		],
 		"compounds": []
 	},
 	"extensions": {

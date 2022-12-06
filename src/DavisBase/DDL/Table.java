@@ -334,7 +334,8 @@ public class Table {
     }
 
     public boolean delete() {
-        DBEngine.__metadata.deleteTableValues(this.name);
+        String[] inf = { this.name };
+        DBEngine.__metadata.deleteTableValues(inf);
         File tableFile = new File(this.getFilePath());
         return tableFile.delete();
     }
