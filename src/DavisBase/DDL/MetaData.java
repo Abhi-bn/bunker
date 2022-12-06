@@ -245,13 +245,12 @@ public class MetaData extends Table {
     }
 
     @Override
-    public int deleteTableValues(String... cols) {
+    public int deleteTableValues(String[] cols) {
         ValueField[] columns = tables_info.get(this.name);
         ValueField field = getMeColumnFromName(columns, "TABLE");
         field.setValue(cols[0]);
         ValueField[] fields = { field };
         return deleteTableValues(fields, columns) > 0 ? 1 : 0;
-
     }
 
     @Override
