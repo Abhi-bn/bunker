@@ -142,7 +142,7 @@ public class DBEngine {
             ValueField[] vf = { new ValueField(i++, col[0]), new ValueField(tableName, col[1]) };
             val.add(vf);
         }
-        Draw.drawTable(col, val);
+        Draw.drawTable("Tables", col, val);
         return true;
     }
 
@@ -156,7 +156,7 @@ public class DBEngine {
             ValueField[] vf = { new ValueField(i++, col[0]), new ValueField(database, col[1]) };
             val.add(vf);
         }
-        Draw.drawTable(col, val);
+        Draw.drawTable("", col, val);
     }
 
     public boolean checkIfDbExists(String databaseName) {

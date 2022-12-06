@@ -238,7 +238,7 @@ public class MetaData extends Table {
             BPlusTreeController pc = new BPlusTreeController(rf, false);
             ArrayList<ValueField[]> data = pc.select_all_data(AllFields);
             update_all_tables_info(data);
-            Draw.drawTable(AllFields, data);
+            Draw.drawTable(name, AllFields, data);
             rf.close();
         } catch (IOException e) {
         }

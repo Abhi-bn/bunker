@@ -35,10 +35,12 @@ public class Draw {
         return total_length;
     }
 
-    public static void drawTable(ColumnField[] column, ArrayList<ValueField[]> values) {
+    public static void drawTable(String name, ColumnField[] column, ArrayList<ValueField[]> values) {
         int[] format = new int[column.length];
         int[] special = new int[column.length];
         int total_length = format_length(column, values, special, format);
+
+        System.out.println(name);
 
         // Draw Header
         draw_line(special, total_length, 0);

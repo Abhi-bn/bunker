@@ -114,6 +114,11 @@ public class Commands {
     }
 
     private static void describe(ArrayList<String> commandTokens) {
+        if (!Settings.getDataBaseSelected()) {
+            System.out.println(Settings.getDataBaseNotSelected());
+            return;
+        }
+
         if (commandTokens.size() == 1) {
             db.describe("");
             return;
