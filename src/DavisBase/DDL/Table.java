@@ -127,7 +127,7 @@ public class Table {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             BPlusTreeController pc = new BPlusTreeController(rf, false);
             ArrayList<ValueField[]> data = pc.select_data(to_show, table_info, column);
-            Draw.drawTable(table_info, data);
+            Draw.drawTable(name, table_info, data);
             rf.close();
         } catch (IOException e) {
 
@@ -144,7 +144,7 @@ public class Table {
             vf[i] = new ValueField(SupportedTypesConst.TypesToString.get(cf.getType()), c, i);
         }
         values.add(vf);
-        Draw.drawTable(table_info, values);
+        Draw.drawTable(name, table_info, values);
     }
 
     public int deleteTableValues(String[] cols) {
