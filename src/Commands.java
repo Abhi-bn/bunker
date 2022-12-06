@@ -137,7 +137,6 @@ public class Commands {
     }
 
     public static void parseCreateDatabase(String command) {
-        System.out.println("Stub: parseCreateDatabase method");
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (commandTokens.size() != 3) {
             System.out.println(Settings.getSyntaxError());
@@ -222,7 +221,6 @@ public class Commands {
 
     public static void dropTable(ArrayList<String> commandTokens) {
         System.out.println("Command: " + tokensToCommandString(commandTokens));
-        System.out.println("Stub: This is the dropTable method.");
         if (commandTokens.size() != 3) {
             System.out.println(Settings.getSyntaxError());
             return;
@@ -259,6 +257,18 @@ public class Commands {
                 System.out.println(Settings.getdataBaseTableNotFound());
                 return;
             }
+        } else if (commandTokens.contains("where") && !commandTokens.contains("*")) {
+            if (db.checkIfTableExists(Settings.getDataBaseName(),
+                    commandTokens.get(commandTokens.indexOf("from") + 1))) {
+                command = CommonUse.removeBegning(command, 1);
+                String selectColumnString[] = CommonUse.selectWhereCols(command);
+                String[] whereSelectClause = CommonUse.wherePrep(command);
+                db.select(commandTokens.get(commandTokens.indexOf("from") + 1), whereSelectClause,
+                        selectColumnString);
+            } else {
+                System.out.println(Settings.getdataBaseTableNotFound());
+                return;
+            }
         } else if (commandTokens.contains("*")) {
             if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(3))) {
                 db.select(commandTokens.get(3), array, array);
@@ -274,22 +284,6 @@ public class Commands {
                 command = CommonUse.removeEnd(command, 2);
                 String selectColumnString[] = CommonUse.splitGenerator(command, ",");
                 db.select(commandTokens.get(commandTokens.size() - 1), array,
-                        selectColumnString);
-            } else {
-                System.out.println(Settings.getdataBaseTableNotFound());
-                return;
-            }
-        } else if (commandTokens.contains("where") && !commandTokens.contains("*")) {
-            if (db.checkIfTableExists(Settings.getDataBaseName(),
-                    commandTokens.get(commandTokens.indexOf("from") + 1))) {
-                command = CommonUse.removeBegning(command, 1);
-                String selectColumnString[] = CommonUse.selectWhereCols(command);
-                String[] whereSelectClause = CommonUse.wherePrep(command);
-                System.out.println(commandTokens.get(commandTokens.size() - 1));
-                System.out.println(whereSelectClause[0]);
-                System.out.println(whereSelectClause[1]);
-                System.out.println(selectColumnString[0]);
-                db.select(commandTokens.get(commandTokens.indexOf("from") + 1), whereSelectClause,
                         selectColumnString);
             } else {
                 System.out.println(Settings.getdataBaseTableNotFound());
@@ -325,6 +319,8 @@ public class Commands {
         command.replace(",", " , ");
         command.replace("\\(", " ( ");
         command.replace("\\)", " ) ");
+        command.replace(" FROM", " from");
+        command.replace(" WHERE", " where");
         ArrayList<String> tokenizedCommand = new ArrayList<String>(Arrays.asList(command.split(" ")));
         return tokenizedCommand;
     }

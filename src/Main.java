@@ -20,6 +20,8 @@ public class Main {
             }
             /* Strip newlines and carriage returns */
             userCommand = scanner.next().replace("\n", " ").replace("\r", "").trim();
+            userCommand = userCommand.replace("FROM", "from");
+            userCommand = userCommand.replace("WHERE", "where");
             Commands.parseUserCommand(userCommand);
         }
         System.out.println("Exiting...");
