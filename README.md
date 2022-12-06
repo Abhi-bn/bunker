@@ -1,6 +1,18 @@
-This file consists of commnads that are supported by our database and syntax of each command: - 
 
-SUPPORTED DATA TYPES : -
+# Bunker Database Management System
+A reinforced underground shelter (safe storage), typically for use in wartime
+
+---
+## Instructions to run the code base
+```bash
+cd bin/
+java Main
+```
+---
+This file consists of commands that are supported by our database and syntax of each command: - 
+
+## SUPPORTED DATA TYPES : -
+```
 	->TINY INT
 	->SMALL INT
 	->INT
@@ -12,9 +24,10 @@ SUPPORTED DATA TYPES : -
 	->DATE TIME
 	->DATE
 	->TEXT
+```
 
-DATA DEFINITION LANGUAGE COMMANDS: -
-
+## DATA DEFINITION LANGUAGE COMMANDS: -
+```
 	->SHOW DATABASES;
 
 	->CREATE DATABASE <database_name>;
@@ -35,10 +48,11 @@ DATA DEFINITION LANGUAGE COMMANDS: -
 	->DROP DATABASE <database_name>;
 
 	->EXIT;
+```
 
+## DATA MANIPULATION LANGUAGE COMMANDS: -
 
-DATA MANIPULATION LANGUAGE COMMANDS: -
-
+```
 	->INSERT INTO <table_name> <value1>, ......;
 
 	UPDATE COMMAND USAGE
@@ -57,10 +71,10 @@ DATA MANIPULATION LANGUAGE COMMANDS: -
 		MULTI FIELD DELETION IS ALSO SUPPORTED SYNTAX IS AS FOLLOWS: -
 
 			->DELETE <table_name> where <column_name1> <OPERATOR> <value1>, <column_name2> <OPERATOR> <value2>;
+```
 
-
-DATA QUERY LANGUAGE: -
-
+## DATA QUERY LANGUAGE: -
+```
 	->SELECT * FROM <table_name>;
 
 	SELECT WITH ONLY SOME FIELDS OF THE TABLE : -
@@ -82,15 +96,18 @@ DATA QUERY LANGUAGE: -
 	SELECT WITH MULTIPLE WHERE CLAUSE AND COLUMN SELECTION: -
 	
 		->SELECT <column_name1>, <column_name2> FROM <table_name> where <column1> <OPERATOR> <value1>, <column2> <OPERATOR> <value2>;
+```
 
-
-OPERATOR'S SUPPORTED(WHERE EVER<OPERATOR> is used we can make use of the below operators for appropriate data types) : -
+## OPERATOR'S SUPPORTED(WHERE EVER<OPERATOR> is used we can make use of the below operators for appropriate data types) : -
+```
 	=	>	<	!=	<=	>=	
+```
 
-EXAMPLE COMMANDS FOR TESTING : -
+## EXAMPLE COMMANDS FOR TESTING : -
 
-CREATE DATABASE TEST;
+### CREATE DATABASE TEST;
 
+```sql
 USE TEST;
 
 SHOW DATABASES;
@@ -128,3 +145,4 @@ DELETE TABLE TESTINGTABLE WHERE COLUMN1 = 100;
 SELECT * FROM TESTINGTABLE;
 
 DROP DATABASE TEST;
+```
