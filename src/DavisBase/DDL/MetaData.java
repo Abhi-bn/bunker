@@ -40,7 +40,7 @@ public class MetaData extends Table {
                 { "UNIQUE", "TINYINT" },
                 { "NULLABLE", "TINYINT" },
                 { "ORDER", "SMALLINT" },
-                { "ACCESS", "SMALLINT" },
+                { "P_KEY", "SMALLINT" },
                 { "VALUE", "INT" }
         };
         meta_info = info;
@@ -135,10 +135,23 @@ public class MetaData extends Table {
         ColumnField[] meta_data = new ColumnField[columns.length + 1];
         String[] id_ = { "_id", "INT", "UNIQUE" };
         meta_data[0] = new ColumnField(id_, 0);
+
+        int count = 0;
         for (int i = 1; i < columns.length + 1; i++) {
             String[] eachCol = columns[i - 1].split(" ");
             ColumnField tf = new ColumnField(eachCol, i);
+            for (int j = 0; j < eachCol.length; j++) {
+                if (eachCol[j].toUpperCase().equals("PRIMARY_KEY")) {
+                    count += 1;
+                    tf.setAccess(1);
+                    tf.setUnique(true);
+                }
+            }
             meta_data[i] = tf;
+        }
+        if (count > 1) {
+            System.out.println("Can't have multiple Primary Key for a table");
+            System.exit(1);
         }
         return meta_data;
     }

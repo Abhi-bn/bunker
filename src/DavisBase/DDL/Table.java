@@ -33,13 +33,12 @@ public class Table {
         if (f.exists())
             return false;
         try {
-            RandomAccessFile rf = new RandomAccessFile(f, "rw");
             DBEngine.__metadata.insert(name, columns);
+            RandomAccessFile rf = new RandomAccessFile(f, "rw");
             f.createNewFile();
             PageGenerator.generatePage(Page.PageType.TableLeaf, rf, true);
             rf.close();
         } catch (DavisBaseExceptions.PageOverflow e) {
-
         } catch (IOException e) {
         }
         return true;
