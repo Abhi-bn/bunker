@@ -141,7 +141,7 @@ public class ColumnField {
         }
     }
 
-    private final static String[] supported_types = { "UNIQUE", "NULLABLE" };
+    private final static String[] supported_types = { "UNIQUE", "NULLABLE", "PRIMARY_KEY" };
 
     public static boolean isUnique(String[] cols) {
         for (int i = 2; i < cols.length; i++) {

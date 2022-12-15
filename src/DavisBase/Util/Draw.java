@@ -38,6 +38,17 @@ public class Draw {
     public static void drawTable(String name, ColumnField[] column, ArrayList<ValueField[]> values) {
         int[] format = new int[column.length];
         int[] special = new int[column.length];
+        int count = 0;
+        for (int i = 0; i < column.length; i++) {
+            if (column[i].getAccess() == 1) {
+                column[i].setName(name + "(P_KEY)");
+                count += 1;
+            }
+        }
+
+        if (count == 0)
+            column[0].setName(name + "(D_P_KEY)");
+
         int total_length = format_length(column, values, special, format);
 
         System.out.println(name);
