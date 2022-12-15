@@ -46,8 +46,12 @@ public class Draw {
             }
         }
 
-        if (count == 0)
-            column[0].setName(name + "(D_P_KEY)");
+        if (count == 0) {
+            for (int i = 0; i < column.length; i++) {
+                if (column[i].getName().equals("_ID"))
+                    column[i].setName(name + "(D_P_KEY)");
+            }
+        }
 
         int total_length = format_length(column, values, special, format);
 
