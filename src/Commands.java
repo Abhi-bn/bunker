@@ -200,7 +200,13 @@ public class Commands {
     public static void parseDelete(String command) {
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
-            db.delete(commandTokens.get(2), CommonUse.wherePrep(command));
+            if (commandTokens.contains("WHERE") || commandTokens.contains("where")) {
+                System.out.println("DELETE WITH WHERE");
+                db.delete(commandTokens.get(2), CommonUse.wherePrep(command));
+            } else {
+
+                System.out.println("DELETE WITHOUT WHERE");
+            }
         } else {
             System.out.println(Settings.getdataBaseTableNotFound());
         }
