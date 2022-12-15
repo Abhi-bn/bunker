@@ -201,11 +201,11 @@ public class Commands {
         ArrayList<String> commandTokens = commandStringToTokenList(command);
         if (db.checkIfTableExists(Settings.getDataBaseName(), commandTokens.get(2))) {
             if (commandTokens.contains("WHERE") || commandTokens.contains("where")) {
-                System.out.println("DELETE WITH WHERE");
+                // System.out.println("DELETE WITH WHERE");
                 db.delete(commandTokens.get(2), CommonUse.wherePrep(command));
             } else {
+                // System.out.println("DELETE WITHOUT WHERE");
                 db.delete(commandTokens.get(2), new String[0]);
-                System.out.println("DELETE WITHOUT WHERE");
             }
         } else {
             System.out.println(Settings.getdataBaseTableNotFound());
