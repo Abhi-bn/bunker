@@ -204,7 +204,7 @@ public class Commands {
                 System.out.println("DELETE WITH WHERE");
                 db.delete(commandTokens.get(2), CommonUse.wherePrep(command));
             } else {
-
+                db.delete(commandTokens.get(2), new String[0]);
                 System.out.println("DELETE WITHOUT WHERE");
             }
         } else {
